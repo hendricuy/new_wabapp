@@ -295,21 +295,21 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
   position: fixed; 
   inset: 0; 
   z-index: 50000; 
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6); /* WAJIB: Ganti dari transparent agar area klik luar aktif */
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: none; 
-  align-items: center;
-  justify-content: center;
+  align-items: center; /* Centering vertikal */
+  justify-content: center; /* Centering horizontal */
   animation: fadeInOverlay 0.15s ease; 
 }
 .context-menu-overlay.active { 
-  display: flex; /* UBAH dari block ke flex! */
+  display: flex; /* WAJIB: Ganti dari block ke flex */
 }
-@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
 
 .context-menu { 
-  position: relative; /* UBAH dari absolute ke relative */
+  position: relative; /* WAJIB: Ganti dari fixed ke relative */
+  /* Hapus baris top: 50%, left: 50%, transform: translate... */
   background: rgba(15, 10, 26, 0.97); 
   border: 1px solid rgba(139, 92, 246, 0.15); 
   border-radius: 16px; 
@@ -322,6 +322,55 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
   animation: contextMenuPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); 
   z-index: 50001; 
   margin: 16px;
+}
+/* ... (CSS header .context-menu-header dst tetap Anda pakai) ... */
+.context-menu-header { 
+  padding: 14px 16px; 
+  background: rgba(139, 92, 246, 0.08); 
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15); 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+}
+.context-menu-header-icon { 
+  width: 32px; 
+  height: 32px; 
+  border-radius: 8px; 
+  background: rgba(139, 92, 246, 0.15); 
+  color: var(--cyan); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 14px; 
+  flex-shrink: 0; 
+}
+.context-menu-header-text { 
+  flex: 1; 
+  min-width: 0; 
+}
+.context-menu-header-title { 
+  font-size: 11px; 
+  color: var(--slate-500); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  margin-bottom: 2px; 
+}
+.context-menu-header-name { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--text-main); 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+}
+.context-menu-header-subtitle { 
+  font-size: 11px; 
+  color: var(--slate-500); 
+  font-family: var(--font-standar-mono); 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+  margin-top: 1px; 
 }
 @keyframes contextMenuPopIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
 [data-theme="light"] .context-menu { background: rgba(255, 255, 255, 0.97); border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.03) inset; }
@@ -1447,23 +1496,37 @@ function renderNotesPushNav() { const c = safeGet('account-list-container'); if 
 function renderNotesFolderView(treeNode, parentPath) { let html = ''; const folderNames = Object.keys(treeNode); let directSubfolders = []; let directItems = []; folderNames.forEach(function(name) { const node = treeNode[name]; const fullPath = parentPath ? (parentPath + '/' + name) : name; directSubfolders.push({ name: name, path: fullPath, count: countAllItems(node), level: getFolderLevel(fullPath) }); directItems = directItems.concat(node._items); }); if (parentPath === '' && directSubfolders.length > 0) { if (viewMode === 'grid') { html += '<div class="folder-grid">'; directSubfolders.forEach(function(sf) { const levelClass = getFolderCardLevelClass(sf.level); const iconClass = getFolderIconClass(sf.level); html += `<div class="folder-grid-card ${levelClass} longpress-target" data-lp-type="folder" data-lp-path="${sf.path.replace(/"/g, '&quot;')}" data-lp-name="${sf.name.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="navigateToFolder('${sf.path.replace(/'/g, "\\'")}')"><div class="folder-grid-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-grid-name">${sf.name}</div><div class="folder-grid-meta"><span class="folder-grid-count"><i class="fa-solid fa-note-sticky"></i> ${sf.count}</span></div></div>`; }); html += '</div>'; } else { html += '<div class="folder-list">'; directSubfolders.forEach(function(sf) { const levelClass = getFolderCardLevelClass(sf.level); const iconClass = getFolderIconClass(sf.level); html += `<div class="folder-list-card ${levelClass} longpress-target" data-lp-type="folder" data-lp-path="${sf.path.replace(/"/g, '&quot;')}" data-lp-name="${sf.name.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="navigateToFolder('${sf.path.replace(/'/g, "\\'")}')"><div class="folder-list-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-list-info"><div class="folder-list-name">${sf.name}</div><div class="folder-list-path">${sf.path}</div></div><div class="folder-list-meta"><span class="folder-list-count"><i class="fa-solid fa-note-sticky"></i> ${sf.count}</span></div></div>`; }); html += '</div>'; } if (directItems.length > 0) { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-note-sticky"></i> Catatan Tanpa Folder</div><span class="section-heading-count">' + directItems.length + '</span></div>'; html += renderNotesList(directItems); } } else if (folderNames.length > 0) { const folderNode = treeNode[folderNames[0]]; const subSubfolders = Object.keys(folderNode._subfolders); if (subSubfolders.length > 0) { if (viewMode === 'grid') { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-diagram-project"></i> Subfolder</div><span class="section-heading-count">' + subSubfolders.length + '</span></div>'; html += '<div class="folder-grid">'; subSubfolders.forEach(function(subName) { const subNode = folderNode._subfolders[subName]; const subPath = folderNode._path + '/' + subName; const subCount = countAllItems(subNode); const subLevel = getFolderLevel(subPath); const levelClass = getFolderCardLevelClass(subLevel); const iconClass = getFolderIconClass(subLevel); html += `<div class="folder-grid-card ${levelClass} longpress-target" data-lp-type="folder" data-lp-path="${subPath.replace(/"/g, '&quot;')}" data-lp-name="${subName.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="navigateToFolder('${subPath.replace(/'/g, "\\'")}')"><div class="folder-grid-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-grid-name">${subName}</div><div class="folder-grid-meta"><span class="folder-grid-count"><i class="fa-solid fa-note-sticky"></i> ${subCount}</span></div></div>`; }); html += '</div>'; } else { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-diagram-project"></i> Subfolder</div><span class="section-heading-count">' + subSubfolders.length + '</span></div>'; html += '<div class="folder-list">'; subSubfolders.forEach(function(subName) { const subNode = folderNode._subfolders[subName]; const subPath = folderNode._path + '/' + subName; const subCount = countAllItems(subNode); const subLevel = getFolderLevel(subPath); const levelClass = getFolderCardLevelClass(subLevel); const iconClass = getFolderIconClass(subLevel); html += `<div class="folder-list-card ${levelClass} longpress-target" data-lp-type="folder" data-lp-path="${subPath.replace(/"/g, '&quot;')}" data-lp-name="${subName.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="navigateToFolder('${subPath.replace(/'/g, "\\'")}')"><div class="folder-list-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-list-info"><div class="folder-list-name">${subName}</div><div class="folder-list-path">${subPath}</div></div><div class="folder-list-meta"><span class="folder-list-count"><i class="fa-solid fa-note-sticky"></i> ${subCount}</span></div></div>`; }); html += '</div>'; } } if (folderNode._items.length > 0) { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-note-sticky"></i> Catatan</div><span class="section-heading-count">' + folderNode._items.length + '</span></div>'; html += renderNotesList(folderNode._items); } } if (!html) html = '<p style="text-align:center;color:var(--slate-500);padding:20px;">Folder kosong.</p>'; return html; }
 function renderNotesList(items) { let html = ''; items.forEach(function(n) { const fav = n.favorit === true || String(n.favorit).toLowerCase() === 'true'; const ds = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : ''; const fp = n.kategori || 'Umum'; const level = getFolderLevel(fp); const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); html += `<div class="note-card longpress-target" data-lp-type="item" data-lp-id="${n.id}" data-lp-datatype="notes" id="row-note-${n.id}" data-category="${fp}" onclick="openAccountDetailPopup('${n.id}', 'notes')"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-grip-vertical drag-handle" title="Tahan untuk geser"></i><i class="fa-regular fa-note-sticky" style="color:${levelColor};font-size:14px;"></i><div style="display:flex;flex-direction:column;"><span style="font-size:16px;font-weight:600;">${n.judul}</span><span style="font-size:11px;color:var(--slate-500);">${fp} • ${ds}</span></div></div><div style="display:flex;align-items:center;gap:2px;"><i class="fa-solid fa-star" onclick="event.stopPropagation(); toggleFavoriteCloud('${n.id}',event,'notes')" style="color:${fav ? '#facc15' : 'var(--slate-500)'};cursor:pointer;font-size:12px;padding:4px;"></i></div></div></div>`; }); return html; }
 let contextMenuPendingAction = null;
-function showContextMenu(x, y, items) { 
-    const overlay = safeGet('contextMenuOverlay'); 
-    const menu = safeGet('contextMenu'); 
-    if (!overlay || !menu) return; 
+function showContextMenu(x, y, items, titleInfo) { 
+  const overlay = safeGet('contextMenuOverlay'); 
+  const menu = safeGet('contextMenu'); 
+  if (!overlay || !menu) return; 
+  
+  let html = '';
+  
+  // Tambahkan Header jika ada info item
+  if (titleInfo) {
+    const subtitleHtml = titleInfo.subtitle 
+      ? `<div class="context-menu-header-subtitle">${titleInfo.subtitle}</div>` 
+      : '';
     
-    let html = ''; 
-    items.forEach(item => { 
-        const dangerClass = item.danger ? ' danger' : ''; 
-        html += `<div class="context-menu-item${dangerClass}" onclick="${item.handler}"><div class="context-menu-icon ${item.iconClass}"><i class="${item.icon}"></i></div><div class="context-menu-text">${item.label}</div></div>`; 
-    }); 
-    
-    safeSetHTML(menu, html); 
-    
-    // HAPUS semua kode menu.style.left/top dan requestAnimationFrame
-    
-    overlay.classList.add('active'); 
-    document.body.style.overflow = 'hidden'; 
+    html += `<div class="context-menu-header">
+      <div class="context-menu-header-icon"><i class="${titleInfo.icon || 'fa-solid fa-circle-info'}"></i></div>
+      <div class="context-menu-header-text">
+        <div class="context-menu-header-title">${titleInfo.label || 'Item'}</div>
+        <div class="context-menu-header-name">${titleInfo.name}</div>
+        ${subtitleHtml}
+      </div>
+    </div>`;
+  }
+  
+  items.forEach(item => { 
+    const dangerClass = item.danger ? ' danger' : ''; 
+    html += `<div class="context-menu-item${dangerClass}" onclick="${item.handler}"><div class="context-menu-icon ${item.iconClass}"><i class="${item.icon}"></i></div><div class="context-menu-text">${item.label}</div></div>`; 
+  }); 
+  
+  safeSetHTML(menu, html); 
+  overlay.classList.add('active'); 
+  document.body.style.overflow = 'hidden'; 
 }
 function closeContextMenu() { const overlay = safeGet('contextMenuOverlay'); if (overlay) overlay.classList.remove('active'); document.body.style.overflow = ''; contextMenuPendingAction = null; }
 function buildFolderContextMenu(folderPath, folderName, dataType) { return [{ icon: 'fa-solid fa-folder-open', iconClass: 'icon-folder', label: 'Buka Folder', handler: `contextMenuOpenFolder('${folderPath.replace(/'/g,"\\'")}','${dataType}')` }, { icon: 'fa-solid fa-arrows-up-down-left-right', iconClass: 'icon-move', label: 'Pindahkan (Dalam Vault)', handler: `contextMenuMoveFolder('${folderPath.replace(/'/g,"\\'")}','${dataType}')` }, { icon: 'fa-solid fa-box-archive', iconClass: 'icon-move', label: 'Pindah ke Brankas Lain', handler: `contextMenuMoveToVaultFolder('${folderPath.replace(/'/g,"\\'")}','${dataType}')` }, { icon: 'fa-solid fa-pen', iconClass: 'icon-rename', label: 'Rename', handler: `contextMenuRenameFolder('${folderPath.replace(/'/g,"\\'")}','${folderName.replace(/'/g,"\\'")}','${dataType}')` }, { icon: 'fa-solid fa-trash-can', iconClass: 'icon-delete', label: 'Hapus Folder', danger: true, handler: `contextMenuDeleteFolder('${folderPath.replace(/'/g,"\\'")}','${dataType}')` }]; }
@@ -1483,7 +1546,70 @@ function handleLongPressStart(e) { if (e.target.closest('.drag-handle, .fa-star,
 function handleLongPressMove(e) { if (!longPressState.active) return; const point = getTouchPoint(e); longPressState.lastX = point.x; longPressState.lastY = point.y; const dx = Math.abs(point.x - longPressState.startX); const dy = Math.abs(point.y - longPressState.startY); if (dx > LONG_PRESS_MOVE_THRESHOLD || dy > LONG_PRESS_MOVE_THRESHOLD) cancelLongPress(); }
 function handleLongPressEnd(e) { cancelLongPress(); }
 function cancelLongPress() { if (longPressState.timer) { clearTimeout(longPressState.timer); longPressState.timer = null; } if (longPressState.target) longPressState.target.classList.remove('longpress-active'); longPressState.active = false; longPressState.target = null; }
-function triggerLongPress(target, x, y) { longPressState.triggered = true; longPressState.active = false; target.classList.add('longpress-active'); if (navigator.vibrate) navigator.vibrate(30); const lpType = target.dataset.lpType; const dataType = target.dataset.lpDatatype || (currentTab === 'catatan' ? 'notes' : 'vault'); setTimeout(() => { target.classList.remove('longpress-active'); let menuItems = []; if (lpType === 'folder') { const folderPath = target.dataset.lpPath; const folderName = target.dataset.lpName; menuItems = buildFolderContextMenu(folderPath, folderName, dataType); } else if (lpType === 'item') { const itemId = target.dataset.lpId; menuItems = buildItemContextMenu(itemId, dataType); } if (menuItems.length > 0) showContextMenu(x, y, menuItems); }, 100); }
+function triggerLongPress(target, x, y) { 
+  longPressState.triggered = true; 
+  longPressState.active = false; 
+  target.classList.add('longpress-active'); 
+  if (navigator.vibrate) navigator.vibrate(30); 
+  const lpType = target.dataset.lpType; 
+  const dataType = target.dataset.lpDatatype || (currentTab === 'catatan' ? 'notes' : 'vault'); 
+  
+  setTimeout(() => { 
+    target.classList.remove('longpress-active'); 
+    let menuItems = [];
+    let titleInfo = null; 
+    
+    if (lpType === 'folder') { 
+      const folderPath = target.dataset.lpPath; 
+      const folderName = target.dataset.lpName; 
+      menuItems = buildFolderContextMenu(folderPath, folderName, dataType);
+      // Hitung jumlah item di folder untuk subtitle
+      const dataArray = dataType === 'notes' ? getFilteredNotes() : getFilteredAccounts();
+      const count = dataArray.filter(i => {
+        const kat = i.kategori || 'Umum';
+        return kat === folderPath || kat.startsWith(folderPath + '/');
+      }).length;
+      titleInfo = { 
+        icon: 'fa-solid fa-folder', 
+        label: 'Folder', 
+        name: folderName,
+        subtitle: count + ' item di dalam folder'
+      };
+      
+    } else if (lpType === 'item') { 
+      const itemId = target.dataset.lpId; 
+      menuItems = buildItemContextMenu(itemId, dataType);
+      
+      // Cari data item untuk header
+      const dataArray = dataType === 'notes' ? notes : accounts;
+      const item = dataArray.find(i => String(i.id) === String(itemId));
+      if (item) {
+        if (dataType === 'notes') {
+          // Untuk catatan: tampilkan kategori sebagai subtitle
+          titleInfo = { 
+            icon: 'fa-solid fa-note-sticky', 
+            label: 'Catatan', 
+            name: item.judul || 'Tanpa Judul',
+            subtitle: item.kategori || 'Umum'
+          };
+        } else {
+          // Untuk akun: tampilkan username/email sebagai subtitle
+          const subtitle = item.username 
+            ? '@' + item.username 
+            : (item.email || item.nama_aplikasi || '');
+          titleInfo = { 
+            icon: dapatkanIkonAplikasi(item.kategori, item.nama_aplikasi), 
+            label: 'Akun', 
+            name: item.nama_aplikasi || 'Tanpa Nama',
+            subtitle: subtitle
+          };
+        }
+      }
+    } 
+    
+    if (menuItems.length > 0) showContextMenu(x, y, menuItems, titleInfo); 
+  }, 100); 
+}
 function moveItemAction(id, type) { openFolderPicker(type, (targetPath) => { const dataArray = type === 'notes' ? notes : accounts; const idx = dataArray.findIndex(a => String(a.id) === String(id)); if (idx === -1) return; const oldPath = dataArray[idx].kategori; if (oldPath === targetPath) { showToast('ℹ️ Sudah di folder yang sama', 'fa-info-circle'); return; } dataArray[idx].kategori = targetPath; showToast(`📦 Dipindahkan ke "${targetPath || 'Root'}"`, 'fa-check-circle'); renderCurrentView(); syncCategoryChange(id, targetPath, type); }); }
 function openFolderPicker(dataType, callback, excludePath) { pickerStack = []; pickerCallback = callback; pickerExcludePath = excludePath || null; pickerDataType = dataType || 'vault'; const overlay = safeGet('folderPickerOverlay'); if (!overlay) return; overlay.classList.add('active'); document.body.style.overflow = 'hidden'; const titleText = safeGet('picker-title-text'); const subtitleText = safeGet('picker-subtitle-text'); if (titleText) titleText.textContent = 'Pilih Folder Tujuan'; if (subtitleText) subtitleText.textContent = 'Navigasi folder untuk pindahkan item'; renderPickerView(); }
 function closeFolderPicker() { const overlay = safeGet('folderPickerOverlay'); if (overlay) overlay.classList.remove('active'); document.body.style.overflow = ''; pickerStack = []; pickerCallback = null; pickerExcludePath = null; const input = safeGet('picker-new-folder-input'); if (input) input.value = ''; }
