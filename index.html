@@ -3199,7 +3199,60 @@ function closeAccountDetailPopup() { const popup = safeGet('accountDetailPopup')
 function togglePopupPassword() { const passText = safeGet('popup-pass-text'); const passEye = safeGet('popup-pass-eye'); if (!passText || !passEye) return; if (passText.classList.contains('visible')) { passText.classList.remove('visible'); passEye.className = 'fa-solid fa-eye'; } else { passText.classList.add('visible'); passEye.className = 'fa-solid fa-eye-slash'; } }
 function editFromPopup() { if (!currentPopupAccountId) return; closeAccountDetailPopup(); editEntry(currentPopupAccountId, currentPopupAccountType); }
 function deleteFromPopup() { if (!currentPopupAccountId) return; closeAccountDetailPopup(); deleteEntry(currentPopupAccountId, currentPopupAccountType); }
-function liveSearchDropdown() { const vaultSearch = safeGet('vault-search'); const dc = safeGet('searchDropdownContainer'); const cb = safeGet('clearSearchBtn'); if (!vaultSearch || !dc || !cb) return; const rawQuery = vaultSearch.value; if (!rawQuery || normalizeText(rawQuery) === '') { dc.style.display = 'none'; cb.style.display = 'none'; return; } cb.style.display = 'block'; const query = normalizeText(rawQuery); let hr = ""; if (currentTab !== 'catatan') { const uniqueCats = [...new Set(accounts.map(a => a.kategori).filter(Boolean))]; const matchedCats = uniqueCats.filter(c => isSearchMatch(c, query)); const matchedAccounts = getFilteredAccounts().filter(a => isSearchMatch(a.nama_aplikasi, query) || isSearchMatch(a.kategori, query) || isSearchMatch(a.username, query) || isSearchMatch(a.email, query)); matchedCats.forEach(function(c) { const lvl = getFolderLevel(c); const iconClass = getFolderIconClass(lvl); const levelColorClass = getFolderIconLevelClass(lvl); hr += `<div class="search-drop-row folder-type" onclick="pilihFolderSearch('${c.replace(/'/g,"\\'")}')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="${iconClass}"></i></div><div class="search-drop-text"><strong>[Folder] ${c}</strong></div></div><span class="search-drop-folder">FOLDER</span></div>`; }); matchedAccounts.forEach(function(a) { const appIcon = dapatkanIkonAplikasi(a.kategori, a.nama_aplikasi); const level = getFolderLevel(a.kategori || 'Umum'); const levelColorClass = getFolderIconLevelClass(level); hr += `<div class="search-drop-row" onclick="pilihHasilSearch('${a.id}','${(a.kategori||'').replace(/'/g,"\\'")}','vault')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="${appIcon}"></i></div><div class="search-drop-text"><strong>${a.nama_aplikasi||'Tanpa Nama'}</strong><small>@${a.username || a.email || '-'}</small></div></div><span class="search-drop-folder">${a.kategori||'Umum'}</span></div>`; }); } const matchedNotes = getFilteredNotes().filter(n => isSearchMatch(n.judul, query) || isSearchMatch(n.isi, query) || isSearchMatch(n.kategori, query)); matchedNotes.forEach(function(n) { const level = getFolderLevel(n.kategori || 'Umum'); const levelColorClass = getFolderIconLevelClass(level); hr += `<div class="search-drop-row" onclick="pilihHasilSearch('${n.id}','${(n.kategori||'Umum').replace(/'/g,"\\'")}','notes')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="fa-solid fa-note-sticky"></i></div><div class="search-drop-text"><strong>${n.judul||'Tanpa Judul'}</strong></div></div>${n.kategori ? `<span class="search-drop-folder">${n.kategori}</span>` : ''}</div>`; }); safeSetHTML(dc, hr || '<div style="padding:12px;text-align:center;color:var(--slate-500);">Tidak ditemukan</div>'); const searchBox = safeGet('searchBoxContainer'); if (searchBox) { const rect = searchBox.getBoundingClientRect(); dc.style.top = (rect.bottom + 8) + 'px'; } dc.style.display = 'block'; }
+function liveSearchDropdown() { 
+    const vaultSearch = safeGet('vault-search'); 
+    const dc = safeGet('searchDropdownContainer'); 
+    const cb = safeGet('clearSearchBtn'); 
+    if (!vaultSearch || !dc || !cb) return; 
+    
+    const rawQuery = vaultSearch.value; 
+    if (!rawQuery || normalizeText(rawQuery) === '') { 
+        dc.style.display = 'none'; 
+        cb.style.display = 'none'; 
+        return; 
+    } 
+    cb.style.display = 'block'; 
+    const query = normalizeText(rawQuery); 
+    let hr = ""; 
+    
+    if (currentTab !== 'catatan') { 
+        // ✅ PERBAIKAN: Gunakan getFilteredAccounts() agar hanya mencari di vault aktif
+        const filteredAccounts = getFilteredAccounts(); 
+        const uniqueCats = [...new Set(filteredAccounts.map(a => a.kategori).filter(Boolean))]; 
+        const matchedCats = uniqueCats.filter(c => isSearchMatch(c, query)); 
+        const matchedAccounts = filteredAccounts.filter(a => isSearchMatch(a.nama_aplikasi, query) || isSearchMatch(a.kategori, query) || isSearchMatch(a.username, query) || isSearchMatch(a.email, query)); 
+        
+        matchedCats.forEach(function(c) { 
+            const lvl = getFolderLevel(c); 
+            const iconClass = getFolderIconClass(lvl); 
+            const levelColorClass = getFolderIconLevelClass(lvl); 
+            hr += `<div class="search-drop-row folder-type" onclick="pilihFolderSearch('${c.replace(/'/g,"\\'")}')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="${iconClass}"></i></div><div class="search-drop-text"><strong>[Folder] ${c}</strong></div></div><span class="search-drop-folder">FOLDER</span></div>`; 
+        }); 
+        
+        matchedAccounts.forEach(function(a) { 
+            const appIcon = dapatkanIkonAplikasi(a.kategori, a.nama_aplikasi); 
+            const level = getFolderLevel(a.kategori || 'Umum'); 
+            const levelColorClass = getFolderIconLevelClass(level); 
+            hr += `<div class="search-drop-row" onclick="pilihHasilSearch('${a.id}','${(a.kategori||'').replace(/'/g,"\\'")}','vault')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="${appIcon}"></i></div><div class="search-drop-text"><strong>${a.nama_aplikasi||'Tanpa Nama'}</strong><small>@${a.username || a.email || '-'}</small></div></div><span class="search-drop-folder">${a.kategori||'Umum'}</span></div>`; 
+        }); 
+    } 
+    
+    const matchedNotes = getFilteredNotes().filter(n => isSearchMatch(n.judul, query) || isSearchMatch(n.isi, query) || isSearchMatch(n.kategori, query)); 
+    matchedNotes.forEach(function(n) { 
+        const level = getFolderLevel(n.kategori || 'Umum'); 
+        const levelColorClass = getFolderIconLevelClass(level); 
+        hr += `<div class="search-drop-row" onclick="pilihHasilSearch('${n.id}','${(n.kategori||'Umum').replace(/'/g,"\\'")}','notes')"><div class="search-drop-info"><div class="search-drop-icon ${levelColorClass}"><i class="fa-solid fa-note-sticky"></i></div><div class="search-drop-text"><strong>${n.judul||'Tanpa Judul'}</strong></div></div>${n.kategori ? `<span class="search-drop-folder">${n.kategori}</span>` : ''}</div>`; 
+    }); 
+    
+    safeSetHTML(dc, hr || '<div style="padding:12px;text-align:center;color:var(--slate-500);">Tidak ditemukan</div>'); 
+    
+    const searchBox = safeGet('searchBoxContainer'); 
+    if (searchBox) { 
+        const rect = searchBox.getBoundingClientRect(); 
+        dc.style.top = (rect.bottom + 8) + 'px'; 
+    } 
+    dc.style.display = 'block'; 
+}
 function pilihFolderSearch(k) { const dc = safeGet('searchDropdownContainer'); const vaultSearch = safeGet('vault-search'); const cb = safeGet('clearSearchBtn'); if (dc) dc.style.display = 'none'; if (vaultSearch) vaultSearch.value = ''; if (cb) cb.style.display = 'none'; showFolderRootView = false; if (k.toLowerCase().startsWith("kerja")) { currentTab = 'kerja'; updateActiveTabUI(safeGet('tab-kerja'), "Akun Kerja"); } else if (k.toLowerCase().startsWith("keuangan")) { currentTab = 'keuangan'; } else { currentTab = 'beranda'; updateActiveTabUI(safeGet('tab-beranda'), "Beranda"); } navigationStack = [k]; renderCurrentView(); }
 function pilihHasilSearch(id, kat, type) { const dc = safeGet('searchDropdownContainer'); const vaultSearch = safeGet('vault-search'); const cb = safeGet('clearSearchBtn'); if (dc) dc.style.display = 'none'; if (vaultSearch) vaultSearch.value = ''; if (cb) cb.style.display = 'none'; showFolderRootView = false; if (type === 'notes') { currentTab = 'catatan'; updateActiveTabUI(safeGet('tab-catatan'), "Catatan"); if (!notesLoaded && apiUrl) { fetchData('notes', true); } } else { if ((kat||'').toLowerCase().startsWith("kerja")) { currentTab = 'kerja'; updateActiveTabUI(safeGet('tab-kerja'), "Akun Kerja"); } else if ((kat||'').toLowerCase().startsWith("keuangan")) { currentTab = 'keuangan'; } else { currentTab = 'beranda'; updateActiveTabUI(safeGet('tab-beranda'), "Beranda"); } } navigationStack = []; if (kat) navigationStack = [kat]; renderCurrentView(); setTimeout(() => { openAccountDetailPopup(id, type); const r = safeGet((type === 'notes' ? 'row-note-' : 'row-app-') + id); if (r) { r.scrollIntoView({behavior:'smooth', block:'center'}); r.style.outline = "2px solid var(--accent-color)"; setTimeout(() => r.style.outline = 'none', 2000); } }, 150); }
 function resetPencarian() { const vaultSearch = safeGet('vault-search'); const dc = safeGet('searchDropdownContainer'); const cb = safeGet('clearSearchBtn'); if (vaultSearch) vaultSearch.value = ""; if (dc) dc.style.display = 'none'; if (cb) cb.style.display = 'none'; showFolderRootView = false; renderCurrentView(); }
