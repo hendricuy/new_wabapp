@@ -584,7 +584,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .at-symbol { color: var(--cyan-light) !important; font-weight: 700; margin-right: 2px; }
 .label-user { color: var(--blue) !important; font-weight: 600; margin-right: 4px; }
 .label-email { color: var(--cyan) !important; font-weight: 600; margin-right: 4px; }
-..sync-status-dot { 
+.sync-status-dot { 
     display: inline-flex; 
     align-items: center; 
     gap: 6px; 
@@ -1921,13 +1921,11 @@ async function bulkMoveToVault() {
         return;
     }
     
-    // ✅ SNAPSHOT: Simpan state pemilihan saat ini agar tidak berubah
     const snapshotItems = new Set(selectedItems);
     const snapshotFolders = new Set(selectedFolders);
     const snapshotDataType = currentTab === 'catatan' ? 'notes' : 'vault';
-    
-    // Hitung total item yang akan dipindahkan
     const dataArray = snapshotDataType === 'notes' ? notes : accounts;
+    
     let totalItems = snapshotItems.size;
     snapshotFolders.forEach(folderPath => {
         dataArray.forEach(item => {
@@ -1938,7 +1936,6 @@ async function bulkMoveToVault() {
         });
     });
     
-    // Buat modal vault selector
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.style.display = 'grid';
@@ -1978,21 +1975,12 @@ async function bulkMoveToVault() {
         </div>
     `;
     
-    modal.onclick = function(e) {
-        if (e.target === this) this.remove();
-    };
-    
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
     document.body.appendChild(modal);
     
-    // Event listener untuk tombol Batal
     const btnCancel = modal.querySelector('#btn-cancel-bulk-move');
-    if (btnCancel) {
-        btnCancel.onclick = function() {
-            modal.remove();
-        };
-    }
+    if (btnCancel) btnCancel.onclick = function() { modal.remove(); };
     
-    // Event listener untuk tombol Pindahkan (gunakan closure untuk snapshot)
     const btnExecute = modal.querySelector('#btn-execute-bulk-move');
     if (btnExecute) {
         btnExecute.onclick = async function() {
@@ -2014,61 +2002,87 @@ async function bulkMoveToVault() {
                 return;
             }
             
+            // ✅ AKTIFKAN INDIKATOR SYNCING
+            isSyncing = true;
+            updateSyncStatus(true);
             showToast('⏳ Memindahkan data...', 'fa-spinner');
             
             let movedCount = 0;
-            const errors = [];
+            let idsToMove = [];
             
-            // 1. Pindahkan item individu yang dipilih (gunakan snapshot)
+            // 1. Kumpulkan ID item individu
             for (const id of snapshotItems) {
-                try {
-                    const idx = dataArray.findIndex(a => String(a.id) === String(id));
-                    if (idx !== -1) {
-                        dataArray[idx].vault_id = targetVaultId;
-                        syncMoveToVault(dataArray[idx].id, targetVaultId, snapshotDataType, dataArray[idx].nama_aplikasi || dataArray[idx].judul);
+                const idx = dataArray.findIndex(a => String(a.id) === String(id));
+                if (idx !== -1) {
+                    dataArray[idx].vault_id = targetVaultId;
+                    idsToMove.push(dataArray[idx].id);
+                    movedCount++;
+                }
+            }
+            
+            // 2. Kumpulkan ID dari folder yang dipilih
+            for (const folderPath of snapshotFolders) {
+                dataArray.forEach(item => {
+                    const kat = item.kategori || 'Umum';
+                    if (kat === folderPath || kat.startsWith(folderPath + '/')) {
+                        item.vault_id = targetVaultId;
+                        idsToMove.push(item.id);
                         movedCount++;
                     }
-                } catch (e) {
-                    console.error('Error memindahkan item:', e);
-                    errors.push(e.message);
-                }
+                });
             }
             
-            // 2. Pindahkan semua item di dalam folder yang dipilih (gunakan snapshot)
-            for (const folderPath of snapshotFolders) {
+            // 🚀 3. KIRIM BULK REQUEST (HANYA 1x FETCH!)
+            if (idsToMove.length > 0 && isOnline && apiUrl) {
+                const p = new URLSearchParams();
+                p.append('action', 'bulk_update_vault');
+                p.append('data_type', snapshotDataType);
+                p.append('ids', JSON.stringify(idsToMove));
+                p.append('new_vault_id', targetVaultId);
+                
                 try {
-                    dataArray.forEach(item => {
-                        const kat = item.kategori || 'Umum';
-                        if (kat === folderPath || kat.startsWith(folderPath + '/')) {
-                            item.vault_id = targetVaultId;
-                            syncMoveToVault(item.id, targetVaultId, snapshotDataType, item.nama_aplikasi || item.judul);
-                            movedCount++;
-                        }
+                    const response = await fetch(apiUrl, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'}, 
+                        body: p 
                     });
-                } catch (e) {
-                    console.error('Error memindahkan folder:', e);
-                    errors.push(e.message);
+                    const resJson = await response.json();
+                    
+                    if (resJson.success) {
+                        showToast(`✅ Berhasil memindahkan ${movedCount} data ke "${targetVault.name}"`, 'fa-check-circle');
+                    } else {
+                        showToast(`⚠️ Gagal: ${resJson.message}`, 'fa-exclamation-triangle');
+                        addToSyncQueue(p, `Bulk Move Vault: ${movedCount} items`);
+                    }
+                } catch(e) {
+                    console.warn("Gagal bulk move, masuk antrian:", e);
+                    addToSyncQueue(p, `Bulk Move Vault: ${movedCount} items`);
+                    showToast(`⏳ Offline: Perintah pindah masuk antrian`, 'fa-clock');
                 }
+            } else if (idsToMove.length > 0) {
+                const p = new URLSearchParams();
+                p.append('action', 'bulk_update_vault');
+                p.append('data_type', snapshotDataType);
+                p.append('ids', JSON.stringify(idsToMove));
+                p.append('new_vault_id', targetVaultId);
+                addToSyncQueue(p, `Bulk Move Vault: ${movedCount} items`);
+                showToast(`⏳ Mode Offline: Perintah pindah masuk antrian`, 'fa-clock');
             }
             
-            // Reset state setelah berhasil
+            // Reset state
             selectedItems.clear();
             selectedFolders.clear();
             isMultiSelectMode = false;
-            
-            // Hapus modal
             modal.remove();
+            
+            // Matikan indikator syncing
+            isSyncing = false;
+            updateSyncStatus();
             
             // Render ulang
             renderCurrentView();
             renderStats();
             renderMultiSelectToolbar();
-            
-            if (errors.length > 0) {
-                showToast(`⚠️ ${movedCount} data dipindahkan, ${errors.length} error`, 'fa-exclamation-triangle');
-            } else {
-                showToast(`✅ Berhasil memindahkan ${movedCount} data ke "${targetVault.name}"`, 'fa-check-circle');
-            }
         };
     }
 }
@@ -2105,14 +2119,227 @@ function renameVault(id) { const vault = vaults.find(v => v.id === id); if (!vau
 function transferVaultData(sourceId) { const sourceVault = vaults.find(v => v.id === sourceId); if (!sourceVault) return; const sourceAccounts = accounts.filter(a => (a.vault_id || 'default') === sourceId); const sourceNotes = notes.filter(n => (n.vault_id || 'default') === sourceId); if (sourceAccounts.length === 0 && sourceNotes.length === 0) { showToast('ℹ️ Brankas ini kosong, tidak ada data untuk dipindahkan', 'fa-info-circle'); return; } const otherVaults = vaults.filter(v => v.id !== sourceId); if (otherVaults.length === 0) { showToast('️ Tidak ada brankas tujuan lain. Buat brankas baru terlebih dahulu.', 'fa-circle-exclamation'); return; } transferSourceId = sourceId; showTransferModal(sourceVault, sourceAccounts.length, sourceNotes.length); }
 function showTransferModal(sourceVault, akunCount, catatanCount) { let modal = document.getElementById('transferVaultModal'); if (!modal) { modal = document.createElement('div'); modal.id = 'transferVaultModal'; modal.className = 'modal-overlay'; modal.onclick = function(e) { if (e.target === this) closeTransferModal(); }; modal.innerHTML = `<div class="modal" onclick="event.stopPropagation()"><h3 style="margin-bottom:15px; color:var(--accent-color);"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Data Brankas</h3><div class="transfer-info-box"><div class="transfer-info-label"><i class="fa-solid fa-box-archive" style="color:var(--cyan);"></i> Data Sumber:</div><div class="transfer-info-name" id="transfer-source-name"></div><div class="transfer-info-stats"><span><i class="fa-solid fa-key" style="color:#8b5cf6;"></i> <span id="transfer-akun-count">0</span> Akun</span><span><i class="fa-solid fa-note-sticky" style="color:#06b6d4;"></i> <span id="transfer-catatan-count">0</span> Catatan</span></div></div><div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:var(--slate-300); margin-bottom:8px;"><i class="fa-solid fa-arrow-right" style="color:var(--cyan); margin-right:6px;"></i> Pilih Brankas Tujuan:</label><select id="transfer-target-select" class="transfer-target-select"></select></div><div class="transfer-warning"><div class="transfer-warning-text"><i class="fa-solid fa-triangle-exclamation" style="margin-top:2px; flex-shrink:0;"></i><span>Semua data akan dipindahkan dari brankas sumber ke brankas tujuan. Brankas sumber akan menjadi <strong>kosong</strong> setelah proses ini.</span></div></div><div style="display:flex; gap:12px; margin-top:20px;"><button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #06b6d4, #0891b2);" onclick="executeTransferData()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Sekarang</button><button type="button" style="color:var(--slate-500); background:none; border:none; padding:0 16px;" onclick="closeTransferModal()">Batal</button></div></div>`; document.body.appendChild(modal); } document.getElementById('transfer-source-name').textContent = sourceVault.name; document.getElementById('transfer-akun-count').textContent = akunCount; document.getElementById('transfer-catatan-count').textContent = catatanCount; const select = document.getElementById('transfer-target-select'); select.innerHTML = ''; vaults.forEach(v => { if (v.id !== transferSourceId) { const opt = document.createElement('option'); opt.value = v.id; const isActive = v.id === currentVaultId ? ' (Aktif)' : ''; opt.textContent = v.name + isActive; select.appendChild(opt); } }); modal.style.display = 'grid'; }
 function closeTransferModal() { const modal = document.getElementById('transferVaultModal'); if (modal) modal.style.display = 'none'; transferSourceId = null; }
-async function executeTransferData() { if (!transferSourceId) return; const targetSelect = document.getElementById('transfer-target-select'); if (!targetSelect || !targetSelect.value) { showToast('⚠️ Pilih brankas tujuan!', 'fa-circle-exclamation'); return; } const targetId = targetSelect.value; const sourceVault = vaults.find(v => v.id === transferSourceId); const targetVault = vaults.find(v => v.id === targetId); if (!sourceVault || !targetVault) return; if (!confirm(`⚠️ Konfirmasi Pindahan Data\nPindahkan SEMUA data dari:\n"${sourceVault.name}"\nKe:\n"${targetVault.name}"\nBrankas "${sourceVault.name}" akan menjadi kosong.`)) { return; } showToast('⏳ Memindahkan data...', 'fa-spinner'); let movedAkun = 0; let movedCatatan = 0; accounts.forEach(a => { if ((a.vault_id || 'default') === transferSourceId) { a.vault_id = targetId; movedAkun++; if (isOnline && apiUrl) { const p = new URLSearchParams(); p.append('action', 'update_vault'); p.append('data_type', 'vault'); p.append('id', a.id); p.append('new_vault_id', targetId); fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p }).catch(() => addToSyncQueue(p, `Transfer Vault: ${a.nama_aplikasi}`)); } else { const p = new URLSearchParams(); p.append('action', 'update_vault'); p.append('data_type', 'vault'); p.append('id', a.id); p.append('new_vault_id', targetId); addToSyncQueue(p, `Transfer Vault: ${a.nama_aplikasi}`); } } }); notes.forEach(n => { if ((n.vault_id || 'default') === transferSourceId) { n.vault_id = targetId; movedCatatan++; if (isOnline && apiUrl) { const p = new URLSearchParams(); p.append('action', 'update_vault'); p.append('data_type', 'notes'); p.append('id', n.id); p.append('new_vault_id', targetId); fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p }).catch(() => addToSyncQueue(p, `Transfer Vault: ${n.judul}`)); } else { const p = new URLSearchParams(); p.append('action', 'update_vault'); p.append('data_type', 'notes'); p.append('id', n.id); p.append('new_vault_id', targetId); addToSyncQueue(p, `Transfer Vault: ${n.judul}`); } } }); closeTransferModal(); renderVaultManagerList(); renderCurrentView(); renderStats(); renderNewDashboard(); showToast(`✅ Berhasil memindahkan ${movedAkun} akun & ${movedCatatan} catatan ke "${targetVault.name}"`, 'fa-check-circle'); }
+async function executeTransferData() { 
+    if (!transferSourceId) return; 
+    const targetSelect = document.getElementById('transfer-target-select'); 
+    if (!targetSelect || !targetSelect.value) { 
+        showToast('⚠️ Pilih brankas tujuan!', 'fa-circle-exclamation'); 
+        return; 
+    } 
+    const targetId = targetSelect.value; 
+    const sourceVault = vaults.find(v => v.id === transferSourceId); 
+    const targetVault = vaults.find(v => v.id === targetId); 
+    if (!sourceVault || !targetVault) return; 
+    
+    if (!confirm(`⚠️ Konfirmasi Pindahan Data\nPindahkan SEMUA data dari:\n"${sourceVault.name}"\nKe:\n"${targetVault.name}"\nBrankas "${sourceVault.name}" akan menjadi kosong.`)) { 
+        return; 
+    } 
+    
+    showToast('⏳ Memindahkan data...', 'fa-spinner'); 
+    
+    // ✅ AKTIFKAN INDIKATOR SYNCING
+    isSyncing = true;
+    updateSyncStatus(true);
+    
+    // === 1. KUMPULKAN ID AKUN YANG DIPINDAH ===
+    let akunIds = [];
+    let movedAkun = 0;
+    accounts.forEach(a => { 
+        if ((a.vault_id || 'default') === transferSourceId) { 
+            a.vault_id = targetId; // Update UI lokal instan
+            akunIds.push(a.id);
+            movedAkun++; 
+        } 
+    }); 
+    
+    // === 2. KUMPULKAN ID CATATAN YANG DIPINDAH ===
+    let noteIds = [];
+    let movedCatatan = 0;
+    notes.forEach(n => { 
+        if ((n.vault_id || 'default') === transferSourceId) { 
+            n.vault_id = targetId; // Update UI lokal instan
+            noteIds.push(n.id);
+            movedCatatan++; 
+        } 
+    }); 
+    
+    // === 3. KIRIM BULK REQUEST (MAKSIMAL 2x FETCH!) ===
+    const promises = [];
+    let failedAkun = 0;
+    let failedCatatan = 0;
+    
+    // Bulk transfer akun
+    if (akunIds.length > 0 && isOnline && apiUrl) { 
+        const pAkun = new URLSearchParams();
+        pAkun.append('action', 'bulk_update_vault'); 
+        pAkun.append('data_type', 'vault'); 
+        pAkun.append('ids', JSON.stringify(akunIds)); 
+        pAkun.append('new_vault_id', targetId); 
+        
+        promises.push(
+            fetch(apiUrl, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}, 
+                body: pAkun 
+            })
+            .then(res => res.json())
+            .then(resJson => {
+                if (!resJson.success) {
+                    failedAkun = movedAkun;
+                    addToSyncQueue(pAkun, `Transfer Massal: ${movedAkun} Akun ke ${targetVault.name}`);
+                }
+            })
+            .catch(() => {
+                failedAkun = movedAkun;
+                addToSyncQueue(pAkun, `Transfer Massal: ${movedAkun} Akun ke ${targetVault.name}`);
+            })
+        );
+    } else if (akunIds.length > 0) {
+        const pAkun = new URLSearchParams();
+        pAkun.append('action', 'bulk_update_vault'); 
+        pAkun.append('data_type', 'vault'); 
+        pAkun.append('ids', JSON.stringify(akunIds)); 
+        pAkun.append('new_vault_id', targetId); 
+        failedAkun = movedAkun;
+        addToSyncQueue(pAkun, `Transfer Massal: ${movedAkun} Akun ke ${targetVault.name}`);
+    }
+    
+    // Bulk transfer catatan
+    if (noteIds.length > 0 && isOnline && apiUrl) { 
+        const pNote = new URLSearchParams();
+        pNote.append('action', 'bulk_update_vault'); 
+        pNote.append('data_type', 'notes'); 
+        pNote.append('ids', JSON.stringify(noteIds)); 
+        pNote.append('new_vault_id', targetId); 
+        
+        promises.push(
+            fetch(apiUrl, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}, 
+                body: pNote 
+            })
+            .then(res => res.json())
+            .then(resJson => {
+                if (!resJson.success) {
+                    failedCatatan = movedCatatan;
+                    addToSyncQueue(pNote, `Transfer Massal: ${movedCatatan} Catatan ke ${targetVault.name}`);
+                }
+            })
+            .catch(() => {
+                failedCatatan = movedCatatan;
+                addToSyncQueue(pNote, `Transfer Massal: ${movedCatatan} Catatan ke ${targetVault.name}`);
+            })
+        );
+    } else if (noteIds.length > 0) {
+        const pNote = new URLSearchParams();
+        pNote.append('action', 'bulk_update_vault'); 
+        pNote.append('data_type', 'notes'); 
+        pNote.append('ids', JSON.stringify(noteIds)); 
+        pNote.append('new_vault_id', targetId); 
+        failedCatatan = movedCatatan;
+        addToSyncQueue(pNote, `Transfer Massal: ${movedCatatan} Catatan ke ${targetVault.name}`);
+    }
+    
+    // === 4. TUNGGU SEMUA SELESAI ===
+    await Promise.all(promises);
+    
+    // === 5. MATIKAN INDIKATOR & RENDER ULANG ===
+    isSyncing = false;
+    updateSyncStatus();
+    
+    closeTransferModal(); 
+    renderVaultManagerList(); 
+    renderCurrentView(); 
+    renderStats(); 
+    renderNewDashboard(); 
+    
+    // === 6. TAMPILKAN HASIL ===
+    if (failedAkun === 0 && failedCatatan === 0) {
+        showToast(`✅ Berhasil memindahkan ${movedAkun} akun & ${movedCatatan} catatan ke "${targetVault.name}"`, 'fa-check-circle'); 
+    } else {
+        showToast(`⚠️ ${movedAkun - failedAkun} akun & ${movedCatatan - failedCatatan} berhasil. ${failedAkun + failedCatatan} masuk antrian sync.`, 'fa-exclamation-triangle');
+    }
+}
 function createNewVault() { const nameInput = safeGet('new-vault-name'); const pinInput = safeGet('new-vault-pin'); const name = nameInput ? nameInput.value.trim() : ''; const pin = pinInput ? pinInput.value.trim() : ''; if (!name) { showToast('⚠️ Nama brankas tidak boleh kosong', 'fa-circle-exclamation'); return; } if (pin && !/^\d{4}$/.test(pin)) { showToast('⚠️ PIN harus 4 digit angka', 'fa-circle-exclamation'); return; } const newId = 'vault_' + Date.now(); vaults.push({ id: newId, name: name, pin: pin }); saveVaults(); renderVaultManagerList(); if (nameInput) nameInput.value = ''; if (pinInput) pinInput.value = ''; showToast(`✅ Brankas "${name}" dibuat`, 'fa-check-circle'); }
 function deleteVault(id) { if (id === 'default') { showToast('⚠️ Brankas Utama tidak bisa dihapus', 'fa-circle-exclamation'); return; } const vault = vaults.find(v => v.id === id); if (!vault || !confirm(`Hapus brankas "${vault.name}"?\nPERINGATAN: Semua akun dan catatan di brankas ini akan dihapus PERMANEN!`)) return; accounts = accounts.filter(a => (a.vault_id || 'default') !== id); notes = notes.filter(n => (n.vault_id || 'default') !== id); vaults = vaults.filter(v => v.id !== id); if (currentVaultId === id) { currentVaultId = 'default'; } saveVaults(); renderVaultManagerList(); renderCurrentView(); showToast('🗑️ Brankas dihapus', 'fa-trash'); }
 function contextMenuMoveToVaultItem(id, dataType) { closeContextMenu(); pendingMoveToVault = { type: 'item', idOrPath: id, dataType: dataType }; setTimeout(() => openMoveToVaultModal(), 100); }
 function contextMenuMoveToVaultFolder(path, dataType) { closeContextMenu(); pendingMoveToVault = { type: 'folder', idOrPath: path, dataType: dataType }; setTimeout(() => openMoveToVaultModal(), 100); }
 function openMoveToVaultModal() { const modal = document.getElementById('moveToVaultModal'); const nameDisplay = document.getElementById('move-target-name-display'); const statsDisplay = document.getElementById('move-target-stats-display'); const select = document.getElementById('move-target-vault-select'); if (!modal) return; select.innerHTML = ''; const otherVaults = vaults.filter(v => v.id !== currentVaultId); if (otherVaults.length === 0) { showToast('⚠️ Buat brankas lain terlebih dahulu!', 'fa-circle-exclamation'); return; } otherVaults.forEach(v => { const opt = document.createElement('option'); opt.value = v.id; opt.textContent = v.name + (v.id === 'default' ? ' (Utama)' : ''); select.appendChild(opt); }); if (pendingMoveToVault.type === 'item') { const dataArray = pendingMoveToVault.dataType === 'notes' ? notes : accounts; const data = dataArray.find(i => String(i.id) === String(pendingMoveToVault.idOrPath)); nameDisplay.textContent = data ? (data.nama_aplikasi || data.judul || 'Item') : 'Item'; statsDisplay.innerHTML = '<span>1 Item</span>'; } else if (pendingMoveToVault.type === 'folder') { nameDisplay.textContent = pendingMoveToVault.idOrPath || 'Root Folder'; const dataArray = pendingMoveToVault.dataType === 'notes' ? notes : accounts; const folderPath = pendingMoveToVault.idOrPath; const count = dataArray.filter(i => { const kat = i.kategori || 'Umum'; return kat === folderPath || kat.startsWith(folderPath + '/'); }).length; statsDisplay.innerHTML = `<span>${count} Item di dalam folder ini</span>`; } modal.style.display = 'grid'; }
 function closeMoveToVaultModal() { const modal = document.getElementById('moveToVaultModal'); if (modal) modal.style.display = 'none'; pendingMoveToVault = { type: null, idOrPath: null, dataType: null }; }
-function executeMoveToVault() { const select = document.getElementById('move-target-vault-select'); const targetVaultId = select.value; if (!targetVaultId) { showToast('⚠️ Pilih brankas tujuan!', 'fa-circle-exclamation'); return; } const targetVault = vaults.find(v => v.id === targetVaultId); if (!confirm(`⚠️ Konfirmasi Pindahan\nPindahkan data ke Brankas: "${targetVault.name}"?`)) { return; } let movedCount = 0; if (pendingMoveToVault.type === 'item') { const dataArray = pendingMoveToVault.dataType === 'notes' ? notes : accounts; const idx = dataArray.findIndex(i => String(i.id) === String(pendingMoveToVault.idOrPath)); if (idx !== -1) { dataArray[idx].vault_id = targetVaultId; movedCount = 1; syncMoveToVault(dataArray[idx].id, targetVaultId, pendingMoveToVault.dataType, dataArray[idx].nama_aplikasi || dataArray[idx].judul); } } else if (pendingMoveToVault.type === 'folder') { const dataArray = pendingMoveToVault.dataType === 'notes' ? notes : accounts; const folderPath = pendingMoveToVault.idOrPath; dataArray.forEach(item => { const kat = item.kategori || 'Umum'; if (kat === folderPath || kat.startsWith(folderPath + '/')) { item.vault_id = targetVaultId; movedCount++; syncMoveToVault(item.id, targetVaultId, pendingMoveToVault.dataType, item.nama_aplikasi || item.judul); } }); } closeMoveToVaultModal(); renderCurrentView(); renderStats(); renderNewDashboard(); showToast(`✅ Berhasil memindahkan ${movedCount} item ke "${targetVault.name}"`, 'fa-check-circle'); }
+function executeMoveToVault() {
+    const select = document.getElementById('move-target-vault-select');
+    const targetVaultId = select.value;
+    if (!targetVaultId) { showToast('⚠️ Pilih brankas tujuan!', 'fa-circle-exclamation'); return; }
+    const targetVault = vaults.find(v => v.id === targetVaultId);
+    if (!confirm(`️ Konfirmasi Pindahan\nPindahkan data ke Brankas: "${targetVault.name}"?`)) { return; }
+
+    showToast('⏳ Memindahkan data...', 'fa-spinner');
+    const dataType = pendingMoveToVault.dataType || 'vault';
+    const dataArray = dataType === 'notes' ? notes : accounts;
+    let idsToMove = [];
+    let movedCount = 0;
+
+    // 1️⃣ KUMPULKAN ID & UPDATE UI LOKAL (OPTIMISTIC UI)
+    if (pendingMoveToVault.type === 'item') {
+        const idx = dataArray.findIndex(i => String(i.id) === String(pendingMoveToVault.idOrPath));
+        if (idx !== -1) {
+            dataArray[idx].vault_id = targetVaultId;
+            idsToMove.push(dataArray[idx].id);
+            movedCount = 1;
+        }
+    } else if (pendingMoveToVault.type === 'folder') {
+        const folderPath = pendingMoveToVault.idOrPath;
+        dataArray.forEach(item => {
+            const kat = item.kategori || 'Umum';
+            if (kat === folderPath || kat.startsWith(folderPath + '/')) {
+                item.vault_id = targetVaultId;
+                idsToMove.push(item.id);
+                movedCount++;
+            }
+        });
+    }
+
+    // 2️⃣ SIAPKAN PAYLOAD BULK (HANYA 1x REQUEST KE SERVER)
+    const p = new URLSearchParams();
+    p.append('action', 'bulk_update_vault');
+    p.append('data_type', dataType);
+    p.append('ids', JSON.stringify(idsToMove));
+    p.append('new_vault_id', targetVaultId);
+
+    if (isOnline && apiUrl) {
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: p
+        })
+        .then(res => res.json())
+        .then(resJson => {
+            if (resJson.success) {
+                showToast(`✅ Berhasil memindahkan ${movedCount} item ke "${targetVault.name}"`, 'fa-check-circle');
+            } else {
+                showToast(`⚠️ Gagal pindah: ${resJson.message || 'Error server'}`, 'fa-exclamation-triangle');
+            }
+        })
+        .catch(() => {
+            addToSyncQueue(p, `Bulk Move: ${movedCount} items`);
+            showToast(`⏳ Offline: Perintah pindah masuk antrian`, 'fa-clock');
+        })
+        .finally(() => {
+            closeMoveToVaultModal();
+            renderCurrentView();
+            renderStats();
+            renderNewDashboard();
+        });
+    } else {
+        // MODE OFFLINE: LANGSUNG MASUK ANTRIAN SYNC
+        addToSyncQueue(p, `Bulk Move: ${movedCount} items`);
+        closeMoveToVaultModal();
+        renderCurrentView();
+        renderStats();
+        renderNewDashboard();
+        showToast(`⏳ Mode Offline: Perintah pindah masuk antrian`, 'fa-clock');
+    }
+}
 function syncMoveToVault(id, newVaultId, dataType, itemName) { const p = new URLSearchParams(); p.append('action', 'update_vault'); p.append('data_type', dataType); p.append('id', id); p.append('new_vault_id', newVaultId); if (isOnline && apiUrl) { fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p }).catch(() => addToSyncQueue(p, `Pindah Vault: ${itemName}`)); } else { addToSyncQueue(p, `Pindah Vault: ${itemName}`); } }
 function renderNewDashboard() { const elAkun = safeGet('dash-total-akun'); const elCatatan = safeGet('dash-total-catatan'); const elKategori = safeGet('dash-total-kategori'); const elFavorit = safeGet('dash-total-favorit'); const recentList = safeGet('recent-activity-list'); if (!elAkun || !elCatatan || !elKategori || !elFavorit) return; elAkun.textContent = getFilteredAccounts().length; elCatatan.textContent = getFilteredNotes().length; const allCats = new Set(); getFilteredAccounts().forEach(a => { if (a.kategori) allCats.add(a.kategori); }); getFilteredNotes().forEach(n => { if (n.kategori) allCats.add(n.kategori); }); elKategori.textContent = allCats.size; const totalFav = getFilteredAccounts().filter(a => a.favorit).length + getFilteredNotes().filter(n => n.favorit).length; elFavorit.textContent = totalFav; if (!recentList) return; let recentItems = []; getFilteredAccounts().forEach(a => { const level = getFolderLevel(a.kategori || 'Umum'); const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); const levelBg = level === 0 ? 'var(--folder-icon-bg-0)' : (level === 1 ? 'var(--folder-icon-bg-1)' : 'var(--folder-icon-bg-2)'); recentItems.push({ type: 'vault', title: a.nama_aplikasi || 'Tanpa Nama', meta: a.kategori || 'Umum', icon: dapatkanIkonAplikasi(a.kategori, a.nama_aplikasi), id: a.id, iconColor: levelColor, iconBg: levelBg }); }); getFilteredNotes().forEach(n => { const level = getFolderLevel(n.kategori || 'Umum'); const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); const levelBg = level === 0 ? 'var(--folder-icon-bg-0)' : (level === 1 ? 'var(--folder-icon-bg-1)' : 'var(--folder-icon-bg-2)'); recentItems.push({ type: 'notes', title: n.judul || 'Tanpa Judul', meta: n.kategori || 'Umum', icon: 'fa-solid fa-note-sticky', id: n.id, iconColor: levelColor, iconBg: levelBg }); }); recentItems.reverse(); const latest5 = recentItems.slice(0, 5); if (latest5.length === 0) { safeSetHTML(recentList, '<p class="empty-state">Belum ada data tersimpan.</p>'); } else { let html = ''; latest5.forEach(item => { html += `<div class="recent-item" onclick="openAccountDetailPopup('${item.id}', '${item.type}')"><div class="recent-item-icon" style="background: ${item.iconBg}; color: ${item.iconColor};"><i class="${item.icon}"></i></div><div class="recent-item-info"><div class="recent-item-title">${item.title}</div><div class="recent-item-meta">${item.meta}</div></div><i class="fa-solid fa-chevron-right" style="color: var(--slate-500); font-size: 12px;"></i></div>`; }); safeSetHTML(recentList, html); } }
 function renderCurrentView() { const newDash = safeGet('new-dashboard-view'); const oldKpi = safeGet('old-kpi-view'); const breadcrumbs = safeGet('breadcrumbs-wrapper'); const accountList = safeGet('account-list-container'); if (showFolderRootView) { if (newDash) newDash.style.display = 'none'; if (oldKpi) oldKpi.style.display = 'block'; if (breadcrumbs) breadcrumbs.style.display = 'block'; if (accountList) accountList.style.display = 'block'; renderBreadcrumbs(); renderVaultPushNav(); renderStats(); } else if (currentTab === 'beranda' && navigationStack.length === 0) { if (newDash) newDash.style.display = 'block'; if (oldKpi) oldKpi.style.display = 'none'; if (breadcrumbs) breadcrumbs.style.display = 'none'; if (accountList) accountList.style.display = 'none'; renderNewDashboard(); } else { if (newDash) newDash.style.display = 'none'; if (oldKpi) oldKpi.style.display = 'block'; if (breadcrumbs) breadcrumbs.style.display = 'block'; if (accountList) accountList.style.display = 'block'; renderBreadcrumbs(); if (currentTab === 'catatan') renderNotesPushNav(); else if (currentTab === 'favorit') renderFavoritView(); else renderVaultPushNav(); renderStats(); } }
@@ -2224,10 +2451,53 @@ function renderFolderView(treeNode, parentPath) {
     if (!html) html = '<p style="text-align:center;color:var(--slate-500);padding:20px;">Folder kosong.</p>';
     return html;
 }
-function renderItemsList(items) { let html = ''; items.forEach(function(a) { const st = a.favorit === true || String(a.favorit).toLowerCase() === 'true'; const folderPath = a.kategori || 'Umum'; const level = getFolderLevel(folderPath); const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); const isSelected = selectedItems.has(String(a.id)); const selectClass = isSelected ? 'multi-selected' : ''; const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleItemSelection('${a.id}', 'vault')">` : ''; const clickAction = isMultiSelectMode ? `toggleItemSelection('${a.id}', 'vault')` : `openAccountDetailPopup('${a.id}', 'vault')`; html += `<div class="app-item-row longpress-target ${selectClass}" data-lp-type="item" data-lp-id="${a.id}" data-lp-datatype="vault" id="row-vault-${a.id}" data-category="${folderPath}" onclick="${clickAction}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;">${checkboxHtml}<i class="fa-solid fa-grip-vertical drag-handle" title="Tahan untuk geser"></i><i class="${dapatkanIkonAplikasi(folderPath, a.nama_aplikasi)}" style="color:${levelColor};font-size:20px;width:24px;text-align:center;"></i><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:16px;font-weight:600;"><span class="at-symbol">@</span>${a.username || '-'}</span><span class="app-title" style="font-size:13px;color:var(--slate-500);">${a.nama_aplikasi}</span></div></div><div style="display:flex;align-items:center;gap:2px;">${!isMultiSelectMode ? `<i class="fa-solid fa-star" onclick="event.stopPropagation(); toggleFavoriteCloud('${a.id}',event,'vault')" style="color:${st ? '#facc15' : 'var(--slate-500)'};cursor:pointer;font-size:14px;padding:6px;"></i>` : ''}</div></div></div>`; }); return html; }
+function renderItemsList(items) { 
+    let html = ''; 
+    items.forEach(function(a) { 
+        const st = a.favorit === true || String(a.favorit).toLowerCase() === 'true'; 
+        const folderPath = a.kategori || 'Umum'; 
+        const level = getFolderLevel(folderPath); 
+        const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); 
+        const isSelected = selectedItems.has(String(a.id)); 
+        const selectClass = isSelected ? 'multi-selected' : ''; 
+        const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleItemSelection('${a.id}', 'vault')">` : ''; 
+        const clickAction = isMultiSelectMode ? `toggleItemSelection('${a.id}', 'vault')` : `openAccountDetailPopup('${a.id}', 'vault')`; 
+        
+        // ✅ LOGIKA BARU: Cek apakah ID masih Temporary (Hantu)
+        const isTempId = String(a.id).startsWith('TEMP-');
+        const starHtml = !isMultiSelectMode ? (isTempId 
+            ? `<i class="fa-solid fa-star" style="color:var(--slate-500);opacity:0.3;cursor:not-allowed;font-size:14px;padding:6px;" title="Menunggu sinkronisasi server..."></i>` 
+            : `<i class="fa-solid fa-star" onclick="event.stopPropagation(); toggleFavoriteCloud('${a.id}',event,'vault')" style="color:${st ? '#facc15' : 'var(--slate-500)'};cursor:pointer;font-size:14px;padding:6px;"></i>`) : '';
+
+        html += `<div class="app-item-row longpress-target ${selectClass}" data-lp-type="item" data-lp-id="${a.id}" data-lp-datatype="vault" id="row-vault-${a.id}" data-category="${folderPath}" onclick="${clickAction}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;">${checkboxHtml}<i class="fa-solid fa-grip-vertical drag-handle" title="Tahan untuk geser"></i><i class="${dapatkanIkonAplikasi(folderPath, a.nama_aplikasi)}" style="color:${levelColor};font-size:20px;width:24px;text-align:center;"></i><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:16px;font-weight:600;"><span class="at-symbol">@</span>${a.username || '-'}</span><span class="app-title" style="font-size:13px;color:var(--slate-500);">${a.nama_aplikasi}</span></div></div><div style="display:flex;align-items:center;gap:2px;">${starHtml}</div></div></div>`; 
+    }); 
+    return html; 
+}
 function renderNotesPushNav() { const c = safeGet('account-list-container'); if (!c) return; if (!notes || notes.length === 0) { safeSetHTML(c, '<p style="text-align:center;color:var(--slate-500);padding:20px;">Belum ada catatan.</p>'); return; } const tree = buildFolderTree(getFilteredNotes()); const currentPath = getCurrentPath(); let currentNode = tree; if (currentPath) { const parts = currentPath.split('/'); for (let i = 0; i < parts.length; i++) { if (currentNode[parts[i]]) { if (i < parts.length - 1) currentNode = currentNode[parts[i]]._subfolders; else currentNode = { [parts[i]]: currentNode[parts[i]] }; } else { safeSetHTML(c, '<p style="text-align:center;color:var(--slate-500);padding:20px;">Folder tidak ditemukan.</p>'); return; } } } safeSetHTML(c, renderNotesFolderView(currentNode, currentPath)); }
 function renderNotesFolderView(treeNode, parentPath) { let html = ''; const folderNames = Object.keys(treeNode); let directSubfolders = []; let directItems = []; folderNames.forEach(function(name) { const node = treeNode[name]; const fullPath = parentPath ? (parentPath + '/' + name) : name; directSubfolders.push({ name: name, path: fullPath, count: countAllItems(node), level: getFolderLevel(fullPath) }); directItems = directItems.concat(node._items); }); if (parentPath === '' && directSubfolders.length > 0) { if (viewMode === 'grid') { html += '<div class="folder-grid">'; directSubfolders.forEach(function(sf) { const levelClass = getFolderCardLevelClass(sf.level); const iconClass = getFolderIconClass(sf.level); const isSelected = selectedFolders.has(sf.path); const selectClass = isSelected ? 'multi-selected' : ''; const safePath = sf.path.replace(/'/g, "\\'").replace(/"/g, '&quot;'); const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleFolderSelection('${safePath}')" style="position:absolute; top:12px; right:12px; z-index:2;">` : ''; const clickAction = isMultiSelectMode ? `event.stopPropagation(); toggleFolderSelection('${safePath}')` : `navigateToFolder('${safePath}')`; html += `<div class="folder-grid-card ${levelClass} longpress-target ${selectClass}" data-lp-type="folder" data-lp-path="${sf.path.replace(/"/g, '&quot;')}" data-lp-name="${sf.name.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="${clickAction}" style="position:relative;">${checkboxHtml}<div class="folder-grid-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-grid-name">${sf.name}</div><div class="folder-grid-meta"><span class="folder-grid-count"><i class="fa-solid fa-note-sticky"></i> ${sf.count}</span></div></div>`; }); html += '</div>'; } else { html += '<div class="folder-list">'; directSubfolders.forEach(function(sf) { const levelClass = getFolderCardLevelClass(sf.level); const iconClass = getFolderIconClass(sf.level); const isSelected = selectedFolders.has(sf.path); const selectClass = isSelected ? 'multi-selected' : ''; const safePath = sf.path.replace(/'/g, "\\'").replace(/"/g, '&quot;'); const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleFolderSelection('${safePath}')" style="position:absolute; top:12px; right:12px; z-index:2;">` : ''; const clickAction = isMultiSelectMode ? `event.stopPropagation(); toggleFolderSelection('${safePath}')` : `navigateToFolder('${safePath}')`; html += `<div class="folder-list-card ${levelClass} longpress-target ${selectClass}" data-lp-type="folder" data-lp-path="${sf.path.replace(/"/g, '&quot;')}" data-lp-name="${sf.name.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="${clickAction}" style="position:relative;">${checkboxHtml}<div class="folder-list-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-list-info"><div class="folder-list-name">${sf.name}</div><div class="folder-list-path">${sf.path}</div></div><div class="folder-list-meta"><span class="folder-list-count"><i class="fa-solid fa-note-sticky"></i> ${sf.count}</span></div></div>`; }); html += '</div>'; } if (directItems.length > 0) { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-note-sticky"></i> Catatan Tanpa Folder</div><span class="section-heading-count">' + directItems.length + '</span></div>'; html += renderNotesList(directItems); } } else if (folderNames.length > 0) { const folderNode = treeNode[folderNames[0]]; const subSubfolders = Object.keys(folderNode._subfolders); if (subSubfolders.length > 0) { if (viewMode === 'grid') { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-diagram-project"></i> Subfolder</div><span class="section-heading-count">' + subSubfolders.length + '</span></div>'; html += '<div class="folder-grid">'; subSubfolders.forEach(function(subName) { const subNode = folderNode._subfolders[subName]; const subPath = folderNode._path + '/' + subName; const subCount = countAllItems(subNode); const subLevel = getFolderLevel(subPath); const levelClass = getFolderCardLevelClass(subLevel); const iconClass = getFolderIconClass(subLevel); const isSelected = selectedFolders.has(subPath); const selectClass = isSelected ? 'multi-selected' : ''; const safePath = subPath.replace(/'/g, "\\'").replace(/"/g, '&quot;'); const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleFolderSelection('${safePath}')" style="position:absolute; top:12px; right:12px; z-index:2;">` : ''; const clickAction = isMultiSelectMode ? `event.stopPropagation(); toggleFolderSelection('${safePath}')` : `navigateToFolder('${safePath}')`; html += `<div class="folder-grid-card ${levelClass} longpress-target ${selectClass}" data-lp-type="folder" data-lp-path="${subPath.replace(/"/g, '&quot;')}" data-lp-name="${subName.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="${clickAction}" style="position:relative;">${checkboxHtml}<div class="folder-grid-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-grid-name">${subName}</div><div class="folder-grid-meta"><span class="folder-grid-count"><i class="fa-solid fa-note-sticky"></i> ${subCount}</span></div></div>`; }); html += '</div>'; } else { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-diagram-project"></i> Subfolder</div><span class="section-heading-count">' + subSubfolders.length + '</span></div>'; html += '<div class="folder-list">'; subSubfolders.forEach(function(subName) { const subNode = folderNode._subfolders[subName]; const subPath = folderNode._path + '/' + subName; const subCount = countAllItems(subNode); const subLevel = getFolderLevel(subPath); const levelClass = getFolderCardLevelClass(subLevel); const iconClass = getFolderIconClass(subLevel); const isSelected = selectedFolders.has(subPath); const selectClass = isSelected ? 'multi-selected' : ''; const safePath = subPath.replace(/'/g, "\\'").replace(/"/g, '&quot;'); const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleFolderSelection('${safePath}')" style="position:absolute; top:12px; right:12px; z-index:2;">` : ''; const clickAction = isMultiSelectMode ? `event.stopPropagation(); toggleFolderSelection('${safePath}')` : `navigateToFolder('${safePath}')`; html += `<div class="folder-list-card ${levelClass} longpress-target ${selectClass}" data-lp-type="folder" data-lp-path="${subPath.replace(/"/g, '&quot;')}" data-lp-name="${subName.replace(/"/g, '&quot;')}" data-lp-datatype="notes" onclick="${clickAction}" style="position:relative;">${checkboxHtml}<div class="folder-list-icon ${levelClass}"><i class="${iconClass}"></i></div><div class="folder-list-info"><div class="folder-list-name">${subName}</div><div class="folder-list-path">${subPath}</div></div><div class="folder-list-meta"><span class="folder-list-count"><i class="fa-solid fa-note-sticky"></i> ${subCount}</span></div></div>`; }); html += '</div>'; } } if (folderNode._items.length > 0) { html += '<div class="section-heading"><div class="section-heading-title"><i class="fa-solid fa-note-sticky"></i> Catatan</div><span class="section-heading-count">' + folderNode._items.length + '</span></div>'; html += renderNotesList(folderNode._items); } } if (!html) html = '<p style="text-align:center;color:var(--slate-500);padding:20px;">Folder kosong.</p>'; return html; }
-function renderNotesList(items) { let html = ''; items.forEach(function(n) { const fav = n.favorit === true || String(n.favorit).toLowerCase() === 'true'; const ds = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : ''; const fp = n.kategori || 'Umum'; const level = getFolderLevel(fp); const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); const isSelected = selectedItems.has(String(n.id)); const selectClass = isSelected ? 'multi-selected' : ''; const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleItemSelection('${n.id}', 'note')">` : ''; const clickAction = isMultiSelectMode ? `toggleItemSelection('${n.id}', 'note')` : `openAccountDetailPopup('${n.id}', 'notes')`; html += `<div class="note-card longpress-target ${selectClass}" data-lp-type="item" data-lp-id="${n.id}" data-lp-datatype="notes" id="row-note-${n.id}" data-category="${fp}" onclick="${clickAction}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;">${checkboxHtml}<i class="fa-solid fa-grip-vertical drag-handle" title="Tahan untuk geser"></i><i class="fa-regular fa-note-sticky" style="color:${levelColor};font-size:14px;"></i><div style="display:flex;flex-direction:column;"><span style="font-size:16px;font-weight:600;">${n.judul}</span><span style="font-size:11px;color:var(--slate-500);">${fp} • ${ds}</span></div></div><div style="display:flex;align-items:center;gap:2px;">${!isMultiSelectMode ? `<i class="fa-solid fa-star" onclick="event.stopPropagation(); toggleFavoriteCloud('${n.id}',event,'notes')" style="color:${fav ? '#facc15' : 'var(--slate-500)'};cursor:pointer;font-size:12px;padding:4px;"></i>` : ''}</div></div></div>`; }); return html; }
+function renderNotesList(items) { 
+    let html = ''; 
+    items.forEach(function(n) { 
+        const fav = n.favorit === true || String(n.favorit).toLowerCase() === 'true'; 
+        const ds = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : ''; 
+        const fp = n.kategori || 'Umum'; 
+        const level = getFolderLevel(fp); 
+        const levelColor = level === 0 ? 'var(--folder-level-0)' : (level === 1 ? 'var(--folder-level-1)' : 'var(--folder-level-2)'); 
+        const isSelected = selectedItems.has(String(n.id)); 
+        const selectClass = isSelected ? 'multi-selected' : ''; 
+        const checkboxHtml = isMultiSelectMode ? `<input type="checkbox" class="multi-select-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleItemSelection('${n.id}', 'note')">` : ''; 
+        const clickAction = isMultiSelectMode ? `toggleItemSelection('${n.id}', 'note')` : `openAccountDetailPopup('${n.id}', 'notes')`; 
+        
+        // ✅ LOGIKA BARU: Cek apakah ID masih Temporary
+        const isTempId = String(n.id).startsWith('TEMP-');
+        const starHtml = !isMultiSelectMode ? (isTempId 
+            ? `<i class="fa-solid fa-star" style="color:var(--slate-500);opacity:0.3;cursor:not-allowed;font-size:12px;padding:4px;" title="Menunggu sinkronisasi server..."></i>` 
+            : `<i class="fa-solid fa-star" onclick="event.stopPropagation(); toggleFavoriteCloud('${n.id}',event,'notes')" style="color:${fav ? '#facc15' : 'var(--slate-500)'};cursor:pointer;font-size:12px;padding:4px;"></i>`) : '';
+
+        html += `<div class="note-card longpress-target ${selectClass}" data-lp-type="item" data-lp-id="${n.id}" data-lp-datatype="notes" id="row-note-${n.id}" data-category="${fp}" onclick="${clickAction}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><div style="display:flex;align-items:center;gap:8px;">${checkboxHtml}<i class="fa-solid fa-grip-vertical drag-handle" title="Tahan untuk geser"></i><i class="fa-regular fa-note-sticky" style="color:${levelColor};font-size:14px;"></i><div style="display:flex;flex-direction:column;"><span style="font-size:16px;font-weight:600;">${n.judul}</span><span style="font-size:11px;color:var(--slate-500);">${fp} • ${ds}</span></div></div><div style="display:flex;align-items:center;gap:2px;">${starHtml}</div></div></div>`; 
+    }); 
+    return html; 
+}
 let contextMenuPendingAction = null;
 function showContextMenu(x, y, items, titleInfo) { 
   const overlay = safeGet('contextMenuOverlay'); 
@@ -2450,7 +2720,112 @@ function renderImportCategoryList(cats, data) { const list = safeGet('import-cat
 function toggleImportCategory(cat) { if (importSelectedCategories.has(cat)) { importSelectedCategories.delete(cat); } else { importSelectedCategories.add(cat); } const el = document.querySelector(`#import-category-list .backup-category-item[data-category="${cat.replace(/"/g, '&quot;')}"]`); if (el) { if (importSelectedCategories.has(cat)) el.classList.add('selected'); else el.classList.remove('selected'); } safeSetText(safeGet('import-selected-count'), importSelectedCategories.size + ' dipilih'); }
 function toggleSelectAllImport() { if (!importPendingData || !importPendingData.data) return; const data = importPendingData.data; const cats = data.categories || [...new Set([...(data.vault||[]).map(a=>a.kategori), ...(data.notes||[]).map(n=>n.kategori)])].filter(Boolean); if (importSelectedCategories.size === cats.length && cats.length > 0) { importSelectedCategories.clear(); } else { cats.forEach(c => importSelectedCategories.add(c)); } document.querySelectorAll('#import-category-list .backup-category-item').forEach(el => { if (importSelectedCategories.has(el.dataset.category)) el.classList.add('selected'); else el.classList.remove('selected'); }); safeSetText(safeGet('import-selected-count'), importSelectedCategories.size + ' dipilih'); }
 function doImport() { if (!importPendingData) return; if (importPendingData.isEncrypted && !importPendingData.data) { const password = safeGet('import-password').value; if (!password) { showToast('️ Masukkan password!', 'fa-circle-exclamation'); return; } try { const key = new TextEncoder().encode(password); const decoded = atob(importPendingData.content); const bytes = new Uint8Array(decoded.length); for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i); const decrypted = new Uint8Array(bytes.length); for (let i = 0; i < bytes.length; i++) { decrypted[i] = bytes[i] ^ key[i % key.length]; } const text = new TextDecoder().decode(decrypted); const data = JSON.parse(text); importPendingData.data = data; processImportData(data, importPendingData.fileName, importPendingData.fileSize); return; } catch(e) { showToast('❌ Password salah atau file corrupt!', 'fa-circle-xmark'); return; } } if (importSelectedCategories.size === 0) { showToast('⚠️ Pilih minimal 1 kategori!', 'fa-circle-exclamation'); return; } executeImport(); }
-async function executeImport() { if (!importPendingData || !importPendingData.data) return; const data = importPendingData.data; const filteredVault = (data.vault || []).filter(a => importSelectedCategories.has(a.kategori)); const filteredNotes = (data.notes || []).filter(n => importSelectedCategories.has(n.kategori)); if (!confirm(`Import ${importSelectedCategories.size} kategori terpilih?\n${filteredVault.length} akun & ${filteredNotes.length} catatan akan ditambahkan.`)) { return; } const progressToastId = 'import-progress-' + Date.now(); const toastContainer = safeGet('toast-container'); if (toastContainer) { const toast = document.createElement('div'); toast.className = 'premium-toast'; toast.id = progressToastId; toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: var(--accent-color)"></i> <span>⏳ Memproses data import...</span>'; toastContainer.appendChild(toast); } let addedAkun = 0, skippedAkun = 0, failedAkun = 0; let addedCatatan = 0, skippedCatatan = 0, failedCatatan = 0; const arrayTeksAkun = []; filteredVault.forEach(a => { const isDuplicate = accounts.some(x => x.id === a.id || (x.username && a.username && x.username.toLowerCase() === a.username.toLowerCase() && x.nama_aplikasi === a.nama_aplikasi)); if (!isDuplicate) { a.vault_id = currentVaultId; accounts.push(a); addedAkun++; const barisTeks = `${a.kategori || ''}|${a.nama_aplikasi || ''}|${a.username || ''}|${a.email || ''}|${a.password || ''}|${a.ket || ''}|${a.ket_dua || ''}|${a.favorit || false}`; arrayTeksAkun.push(barisTeks); } else { skippedAkun++; } }); if (arrayTeksAkun.length > 0 && isOnline && apiUrl) { const pAkun = new URLSearchParams(); pAkun.append("action", "import_massal"); pAkun.append("vault_id", currentVaultId); pAkun.append("data", arrayTeksAkun.join("\n")); try { const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: pAkun }); if (!response.ok) throw new Error('Server error akun'); } catch(e) { console.warn("Gagal kirim massal akun ke server, dialihkan ke antrian offline:", e); failedAkun = addedAkun; addToSyncQueue(pAkun, `Import Massal: ${arrayTeksAkun.length} Akun`); } } const arrayPromisesNotes = []; filteredNotes.forEach(n => { const isDuplicate = notes.some(x => x.id === n.id || (x.judul && n.judul && x.judul.toLowerCase() === n.judul.toLowerCase())); if (!isDuplicate) { n.vault_id = currentVaultId; notes.push(n); addedCatatan++; if (isOnline && apiUrl) { const pNotes = new URLSearchParams({ action: "create", data_type: "notes", kategori: n.kategori || "Umum", judul: n.judul || "", isi: n.isi || "", favorit: n.favorit || false, vault_id: currentVaultId }); arrayPromisesNotes.push(fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: pNotes }).catch(e => { failedCatatan++; addToSyncQueue(pNotes, `Import Catatan: ${n.judul}`); })); } } else { skippedCatatan++; } }); if (arrayPromisesNotes.length > 0) { await Promise.all(arrayPromisesNotes); } const progressToast = document.getElementById(progressToastId); if (progressToast) { progressToast.remove(); } renderCurrentView(); renderStats(); if (typeof renderNewDashboard === 'function') renderNewDashboard(); closeImportModal(); let msg = `✅ Import selesai!<br>+${addedAkun} Akun, +${addedCatatan} Catatan berhasil diproses.`; if (skippedAkun > 0 || skippedCatatan > 0) { msg += `<br>️ ${skippedAkun} Akun & ${skippedCatatan} Catatan dilewati (sudah ada).`; } if (failedAkun > 0 || failedCatatan > 0) { msg += `<br>⚠️ ${failedAkun} Akun & ${failedCatatan} Catatan masuk antrian sync offline.`; } showToast(msg, 'fa-check-circle'); importPendingData = null; }
+async function executeImport() {
+    if (!importPendingData || !importPendingData.data) return;
+    const data = importPendingData.data;
+    const filteredVault = (data.vault || []).filter(a => importSelectedCategories.has(a.kategori));
+    const filteredNotes = (data.notes || []).filter(n => importSelectedCategories.has(n.kategori));
+    
+    if (!confirm(`Import ${importSelectedCategories.size} kategori terpilih?\n${filteredVault.length} akun & ${filteredNotes.length} catatan akan ditambahkan.`)) { 
+        return; 
+    }
+    
+    const progressToastId = 'import-progress-' + Date.now();
+    const toastContainer = safeGet('toast-container');
+    if (toastContainer) {
+        const toast = document.createElement('div');
+        toast.className = 'premium-toast';
+        toast.id = progressToastId;
+        toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: var(--accent-color)"></i> <span>⏳ Memproses data import massal...</span>';
+        toastContainer.appendChild(toast);
+    }
+
+    let addedAkun = 0, skippedAkun = 0, failedAkun = 0;
+    let addedCatatan = 0, skippedCatatan = 0, failedCatatan = 0;
+    
+    // === 1. PROSES AKUN (Sudah Massal - Tetap Dipertahankan) ===
+    const arrayTeksAkun = [];
+    filteredVault.forEach(a => {
+        const isDuplicate = accounts.some(x => x.id === a.id || (x.username && a.username && x.username.toLowerCase() === a.username.toLowerCase() && x.nama_aplikasi === a.nama_aplikasi));
+        if (!isDuplicate) {
+            a.vault_id = currentVaultId;
+            accounts.push(a);
+            addedAkun++;
+            const barisTeks = `${a.kategori || ''}|${a.nama_aplikasi || ''}|${a.username || ''}|${a.email || ''}|${a.password || ''}|${a.ket || ''}|${a.ket_dua || ''}|${a.favorit || false}`;
+            arrayTeksAkun.push(barisTeks);
+        } else {
+            skippedAkun++;
+        }
+    });
+
+    if (arrayTeksAkun.length > 0 && isOnline && apiUrl) {
+        const pAkun = new URLSearchParams();
+        pAkun.append("action", "import_massal");
+        pAkun.append("data_type", "vault");
+        pAkun.append("vault_id", currentVaultId);
+        pAkun.append("data", arrayTeksAkun.join("\n"));
+        try {
+            const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: pAkun });
+            if (!response.ok) throw new Error('Server error akun');
+        } catch(e) {
+            console.warn("Gagal kirim massal akun ke server, dialihkan ke antrian offline:", e);
+            failedAkun = addedAkun;
+            addToSyncQueue(pAkun, `Import Massal: ${arrayTeksAkun.length} Akun`);
+        }
+    }
+
+    // === 2. PERBAIKAN: PROSES CATATAN (Sekarang juga MASSAL, bukan Promise.all lagi!) ===
+    const arrayTeksCatatan = [];
+    filteredNotes.forEach(n => {
+        const isDuplicate = notes.some(x => x.id === n.id || (x.judul && n.judul && x.judul.toLowerCase() === n.judul.toLowerCase()));
+        if (!isDuplicate) {
+            n.vault_id = currentVaultId;
+            notes.push(n);
+            addedCatatan++;
+            // Format teks massal untuk catatan: kategori|judul|isi|tanggal|favorit
+            const barisTeks = `${n.kategori || 'Umum'}|${n.judul || ''}|${n.isi || ''}|${n.tanggal || ''}|${n.favorit || false}`;
+            arrayTeksCatatan.push(barisTeks);
+        } else {
+            skippedCatatan++;
+        }
+    });
+
+    if (arrayTeksCatatan.length > 0 && isOnline && apiUrl) {
+        const pCatatan = new URLSearchParams();
+        pCatatan.append("action", "import_massal");
+        pCatatan.append("data_type", "notes"); // Backend akan membaca ini
+        pCatatan.append("vault_id", currentVaultId);
+        pCatatan.append("data", arrayTeksCatatan.join("\n"));
+        
+        try {
+            const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: pCatatan });
+            if (!response.ok) throw new Error('Server error catatan');
+        } catch(e) {
+            console.warn("Gagal kirim massal catatan ke server, dialihkan ke antrian offline:", e);
+            failedCatatan = addedCatatan;
+            addToSyncQueue(pCatatan, `Import Massal: ${arrayTeksCatatan.length} Catatan`);
+        }
+    }
+
+    // === 3. SELESAI & BERSIHKAN ===
+    const progressToast = document.getElementById(progressToastId);
+    if (progressToast) { progressToast.remove(); }
+    
+    renderCurrentView();
+    renderStats();
+    if (typeof renderNewDashboard === 'function') renderNewDashboard();
+    closeImportModal();
+    
+    let msg = `✅ Import massal selesai!<br>+${addedAkun} Akun, +${addedCatatan} Catatan berhasil diproses.`;
+    if (skippedAkun > 0 || skippedCatatan > 0) {
+        msg += `<br>⚠️ ${skippedAkun} Akun & ${skippedCatatan} Catatan dilewati (sudah ada/duplikat).`;
+    }
+    if (failedAkun > 0 || failedCatatan > 0) {
+        msg += `<br>⏳ ${failedAkun} Akun & ${failedCatatan} Catatan masuk antrian sync offline.`;
+    }
+    showToast(msg, 'fa-check-circle');
+    importPendingData = null;
+}
 function closeImportModal() { const modal = safeGet('importModal'); if (modal) modal.style.display = 'none'; const step1 = safeGet('import-step-1'); const step2 = safeGet('import-step-2'); const fileInput = safeGet('import-file-input'); const passwordSection = safeGet('import-password-section'); const categorySelection = safeGet('import-category-selection'); const preview = safeGet('import-preview'); if (step1) step1.style.display = 'block'; if (step2) step2.style.display = 'none'; if (fileInput) fileInput.value = ''; if (passwordSection) passwordSection.style.display = 'none'; if (categorySelection) categorySelection.style.display = 'none'; if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; } importPendingData = null; importSelectedCategories.clear(); }
 
 // === window.onload ===
@@ -2524,39 +2899,49 @@ else if (currentTab === 'keuangan') label1.innerText = 'Akun Keuangan';
 else label1.innerText = 'Total Akun';
 label2.innerText = 'Kategori';
 }
-async function toggleFavoriteCloud(id, event, dataType) { 
-    dataType = dataType || 'vault'; 
-    if (event && event.stopPropagation) event.stopPropagation(); 
-    const targetArray = dataType === 'notes' ? notes : accounts; 
-    const idx = targetArray.findIndex(a => String(a.id) === String(id)); 
-    if (idx === -1) return; 
-    const isFav = targetArray[idx].favorit === true || String(targetArray[idx].favorit).toLowerCase() === 'true'; 
+async function toggleFavoriteCloud(id, event, dataType) {
+    // 🚨 SAFETY LOCK: Cegah klik jika ID masih hantu (TEMP-)
+    if (String(id).startsWith('TEMP-')) {
+        showToast("⏳ Data belum tersimpan di server. Tunggu sebentar...", "fa-clock");
+        return;
+    }
+
+    dataType = dataType || 'vault';
+    if (event && event.stopPropagation) event.stopPropagation();
+    const targetArray = dataType === 'notes' ? notes : accounts;
+    const idx = targetArray.findIndex(a => String(a.id) === String(id));
+    if (idx === -1) return;
     
-    // 1. Optimistic UI (Bintang berubah instan)
-    targetArray[idx].favorit = !isFav; 
-    renderCurrentView(); 
+    const isFav = targetArray[idx].favorit === true || String(targetArray[idx].favorit).toLowerCase() === 'true';
+    
+    // ✅ 1. OPTIMISTIC UI: Ubah status di memori DULUAN
+    targetArray[idx].favorit = !isFav;
+    
+    // ✅ 2. RENDER ULANG LAYAR SECARA INSTAN (Bintang langsung berubah warna!)
+    renderCurrentView();
     renderStats();
 
+    // ✅ 3. Aktifkan indikator syncing di pojok kanan atas
     isSyncing = true;
     updateSyncStatus(true);
 
-    const p = new URLSearchParams(); 
-    p.append("action", "toggle_favorite"); 
-    p.append("id", id); 
-    p.append("data_type", dataType); 
-    
+    const p = new URLSearchParams();
+    p.append("action", "toggle_favorite");
+    p.append("id", id);
+    p.append("data_type", dataType);
+
     try {
         if (isOnline && apiUrl) {
             const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p });
             const resJson = await response.json();
             
-            // ✅ FIX KRITIS: Cek apakah backend benar-benar sukses update dataset
             if (resJson.success) {
+                // Sukses! Tidak perlu render ulang karena sudah di-render di awal
                 showToast(targetArray[idx].favorit ? "⭐ Ditambahkan ke favorit" : "⭐ Dihapus dari favorit", "fa-star");
             } else {
-                // Jika backend gagal (misal ID tidak ditemukan), kembalikan bintang seperti semula
-                targetArray[idx].favorit = isFav; 
-                renderCurrentView(); 
+                // Jika server menolak, kembalikan status seperti semula (Rollback)
+                targetArray[idx].favorit = isFav;
+                renderCurrentView();
                 renderStats();
                 showToast("⚠️ Gagal update favorit: " + (resJson.message || "ID tidak ditemukan"), "fa-circle-exclamation");
             }
@@ -2564,9 +2949,10 @@ async function toggleFavoriteCloud(id, event, dataType) {
             addToSyncQueue(p, `Favorit: ${isFav ? 'off' : 'on'}`);
             showToast("⏳ Offline: Favorit masuk antrian", "fa-clock");
         }
-    } catch(e) { 
-        targetArray[idx].favorit = isFav; 
-        renderCurrentView(); 
+    } catch(e) {
+        // Jika error koneksi, kembalikan status (Rollback)
+        targetArray[idx].favorit = isFav;
+        renderCurrentView();
         renderStats();
         addToSyncQueue(p, `Favorit: ${isFav ? 'off' : 'on'}`);
         showToast("⚠️ Gagal koneksi: Favorit masuk antrian", "fa-exclamation-triangle");
@@ -2689,25 +3075,21 @@ async function prosesSimpanVault(newData, id) {
             const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p });
             const resJson = await response.json();
             
-            // ✅ FIX KRITIS: Timpa ID Sementara dengan ID Asli dari Backend
+            // ✅ TUKAR ID HANTU DENGAN ID ASLI DARI SERVER
             if (resJson.success && resJson.id && !id) {
                 const localIdx = accounts.findIndex(a => String(a.id) === String(newData.id));
-                if (localIdx !== -1) {
-                    accounts[localIdx].id = resJson.id;
-                }
+                if (localIdx !== -1) accounts[localIdx].id = resJson.id;
             }
-            
-            if (resJson.success) {
-                showToast("✅ Data sukses tersimpan!", "fa-check-circle");
-            } else {
-                showToast("⚠️ Gagal simpan: " + (resJson.message || "Error"), "fa-circle-exclamation");
-            }
+            showToast(resJson.success ? "✅ Data sukses tersimpan!" : "⚠️ Gagal: " + (resJson.message || "Error"), resJson.success ? "fa-check-circle" : "fa-circle-exclamation");
         } catch(e) {
             addToSyncQueue(p, `Vault: ${newData.nama_aplikasi}`);
             showToast("⏳ Offline: Data masuk antrian", "fa-clock");
         } finally {
             isSyncing = false;
             updateSyncStatus();
+            // ✅ WAJIB: Render ulang agar ID TEMP- yang sudah ditukar jadi ID Asli langsung tersinkron di layar
+            renderCurrentView(); 
+            renderStats();
         }
     } else {
         addToSyncQueue(p, `Vault: ${newData.nama_aplikasi}`);
@@ -2744,25 +3126,21 @@ async function prosesSimpanNote(newData, id) {
             const response = await fetch(apiUrl, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: p });
             const resJson = await response.json();
             
-            // ✅ FIX KRITIS: Timpa ID Sementara dengan ID Asli dari Backend
+            // ✅ TUKAR ID HANTU DENGAN ID ASLI DARI SERVER
             if (resJson.success && resJson.id && !id) {
                 const localIdx = notes.findIndex(n => String(n.id) === String(newData.id));
-                if (localIdx !== -1) {
-                    notes[localIdx].id = resJson.id;
-                }
+                if (localIdx !== -1) notes[localIdx].id = resJson.id;
             }
-
-            if (resJson.success) {
-                showToast("✅ Catatan sukses tersimpan!", "fa-check-circle");
-            } else {
-                showToast("⚠️ Gagal simpan: " + (resJson.message || "Error"), "fa-circle-exclamation");
-            }
+            showToast(resJson.success ? "✅ Catatan sukses tersimpan!" : "⚠️ Gagal: " + (resJson.message || "Error"), resJson.success ? "fa-check-circle" : "fa-circle-exclamation");
         } catch(e) {
             addToSyncQueue(p, `Note: ${newData.judul}`);
             showToast("⏳ Offline: Catatan masuk antrian", "fa-clock");
         } finally {
             isSyncing = false;
             updateSyncStatus();
+            // ✅ WAJIB: Render ulang agar ID TEMP- yang sudah ditukar jadi ID Asli langsung tersinkron di layar
+            renderCurrentView(); 
+            renderStats();
         }
     } else {
         addToSyncQueue(p, `Note: ${newData.judul}`);
