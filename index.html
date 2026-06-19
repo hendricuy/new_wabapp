@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#8b5cf6">
+<meta name="theme-color" content="#d4af37">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Royyek Vault - Premium Cloud v8.4 (Multiple Vaults + Multi Profile)</title>
+<title>Royyek Vault - Premium Cloud v8.5 (Multiple Vaults + Multi Profile)</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2910/2910805.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -17,15 +17,15 @@
 :root {
 --font-standar: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 --font-standar-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
---bg-dark: #0f0a1a;
---body-bg: #0f0a1a;
---bg-surface: #1a112b;
+--bg-dark: #050505;
+--body-bg: #050505;
+--bg-surface: #101010;
 --text-main: #f3f0ff;
---cyan: #8b5cf6;
---cyan-light: #a78bfa;
---cyan-dark: #6d28d9;
---blue: #06b6d4;
---indigo: #ec4899;
+--cyan: #d4af37;
+--cyan-light: #f4d03f;
+--cyan-dark: #b8860b;
+--blue: #ffd700;
+--indigo: #c9a227;
 --slate-300: #cbd5e1;
 --slate-500: #94a3b8;
 --nav-bg: rgba(15, 10, 26, 0.96);
@@ -34,19 +34,19 @@
 --input-bg: rgba(0, 0, 0, 0.3);
 --sidebar-width: 280px;
 --badge-bg: rgba(139, 92, 246, 0.15);
---badge-text: #a78bfa;
---app-row-bg: #1a112b;
+--badge-text: #f4d03f;
+--app-row-bg: #101010;
 --app-row-hover: #251840;
 --popup-bg-premium: rgba(15, 10, 26, 0.98);
 --popup-border-premium: rgba(139, 92, 246, 0.2);
 --delete-btn-bg: rgba(244, 63, 94, 0.12);
 --delete-btn-text: #fb7185;
---accent-color: #8b5cf6;
+--accent-color: #d4af37;
 --border-glow: rgba(139, 92, 246, 0.3);
 --card-border-custom: rgba(139, 92, 246, 0.15);
 --kpi-bg-1: linear-gradient(135deg, #4c1d95 0%, #2e1065 100%);
---kpi-bg-2: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
---kpi-text-1: #a78bfa;
+--kpi-bg-2: linear-gradient(135deg, #2b2200 0%, #0f172a 100%);
+--kpi-text-1: #f4d03f;
 --kpi-text-2: #38bdf8;
 --kpi-label-1: rgba(167, 139, 250, 0.8);
 --kpi-label-2: rgba(56, 189, 248, 0.8);
@@ -55,14 +55,14 @@
 --drag-ghost-bg: rgba(139, 92, 246, 0.2);
 --drag-placeholder-bg: rgba(139, 92, 246, 0.05);
 --drag-handle-color: rgba(167, 139, 250, 0.5);
---sync-online: #8b5cf6;
+--sync-online: #d4af37;
 --sync-offline: #f43f5e;
 --sync-pending: #fbbf24;
---title-gradient: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
---subtitle-color: #06b6d4;
---folder-level-0: #8b5cf6;
+--title-gradient: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
+--subtitle-color: #ffd700;
+--folder-level-0: #d4af37;
 --folder-level-1: #6366f1;
---folder-level-2: #06b6d4;
+--folder-level-2: #ffd700;
 --folder-level-0-glow: rgba(139, 92, 246, 0.4);
 --folder-level-1-glow: rgba(99, 102, 241, 0.4);
 --folder-level-2-glow: rgba(6, 182, 212, 0.4);
@@ -80,22 +80,22 @@
 --folder-hover-shadow-2: 0 10px 30px rgba(6, 182, 212, 0.25);
 }
 [data-theme="light"] {
---bg-dark: #faf5ff;
---body-bg: #faf5ff;
---body-bg-gradient: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 50%, #f0f9ff 100%);
+--bg-dark: #f8f4e8;
+--body-bg: #f8f4e8;
+--body-bg-gradient: linear-gradient(135deg, #efe6c3 0%, #f8f4e8 50%, #f0f9ff 100%);
 --bg-surface: #ffffff;
---text-main: #1e1b4b;
+--text-main: #2b2200;
 --slate-300: #475569;
 --slate-500: #64748b;
 --nav-bg: rgba(255, 255, 255, 0.9);
 --header-bg: rgba(255, 255, 255, 0.85);
---header-border: #e9d5ff;
+--header-border: #e6c86e;
 --card-border: rgba(139, 92, 246, 0.15);
 --input-bg: rgba(245, 243, 255, 0.8);
 --badge-bg: rgba(139, 92, 246, 0.15);
---badge-text: #6d28d9;
+--badge-text: #b8860b;
 --app-row-bg: #ffffff;
---app-row-hover: #f5f3ff;
+--app-row-hover: #efe6c3;
 --popup-bg-premium: rgba(255, 255, 255, 0.98);
 --popup-border-premium: rgba(139, 92, 246, 0.2);
 --delete-btn-bg: rgba(244, 63, 94, 0.1);
@@ -107,7 +107,7 @@
 --kpi-bg-2: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
 --kpi-text-1: #5b21b6;
 --kpi-text-2: #0369a1;
---kpi-label-1: #6d28d9;
+--kpi-label-1: #b8860b;
 --kpi-label-2: #075985;
 --card-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1);
 --card-shadow-hover: 0 10px 15px -3px rgba(139, 92, 246, 0.15);
@@ -178,8 +178,19 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 .search-drop-row.folder-type:hover { background: rgba(139, 92, 246, 0.15); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .new-dashboard-container { animation: fadeIn 0.4s ease; padding-bottom: 20px; }
-.welcome-banner { background: var(--kpi-bg-1); border-radius: 20px; padding: 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border: 1px solid var(--card-border-custom); position: relative; overflow: hidden; }
-[data-theme="light"] .welcome-banner { background: linear-gradient(135deg, #ede9fe 0%, #f5f3ff 100%); border-color: rgba(139, 92, 246, 0.2); }
+.welcome-banner { 
+    background: linear-gradient(135deg, #d97706 0%, #3b82f6 100%); /* Ganti di sini */
+    border-radius: 20px; 
+    padding: 24px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 20px; 
+    border: 1px solid var(--card-border-custom); 
+    position: relative; 
+    overflow: hidden; 
+}
+[data-theme="light"] .welcome-banner { background: linear-gradient(135deg, #ede9fe 0%, #efe6c3 100%); border-color: rgba(139, 92, 246, 0.2); }
 .welcome-banner::before { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); border-radius: 50%; }
 .welcome-text h2 { font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; }
 .welcome-text p { font-size: 13px; color: var(--slate-300); font-family: var(--font-standar-mono); }
@@ -194,9 +205,9 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 .kpi-card-enhanced .kpi-info { display: flex; flex-direction: column; }
 .kpi-card-enhanced .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); margin-bottom: 4px; }
 .kpi-card-enhanced .kpi-value { font-size: 24px; font-weight: 800; color: var(--text-main); }
-.kpi-accent-1 .kpi-icon { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+.kpi-accent-1 .kpi-icon { background: rgba(139, 92, 246, 0.15); color: #d4af37; }
 .kpi-accent-2 .kpi-icon { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
-.kpi-accent-3 .kpi-icon { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+.kpi-accent-3 .kpi-icon { background: rgba(6, 182, 212, 0.15); color: #ffd700; }
 .kpi-accent-4 .kpi-icon { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
 .quick-actions-section { margin-bottom: 24px; }
 .section-title { font-size: 14px; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -206,8 +217,8 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 [data-theme="light"] .quick-action-btn { box-shadow: var(--card-shadow); }
 .quick-action-btn:active { transform: scale(0.95); background: var(--app-row-hover); }
 .quick-action-btn .qa-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; }
-.qa-icon.bg-cyan { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-.qa-icon.bg-blue { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.qa-icon.bg-cyan { background: linear-gradient(135deg, #d4af37, #b8860b); }
+.qa-icon.bg-blue { background: linear-gradient(135deg, #ffd700, #0891b2); }
 .qa-icon.bg-red { background: linear-gradient(135deg, #f43f5e, #e11d48); }
 .qa-icon.bg-yellow { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
 .qa-icon.bg-purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
@@ -385,13 +396,13 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 [data-theme="light"] .context-menu-item:active { background: rgba(0,0,0,0.05); }
 .context-menu-item.danger:active { background: rgba(244, 63, 94, 0.12); }
 .context-menu-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.context-menu-icon.icon-folder { color: #8b5cf6; }
+.context-menu-icon.icon-folder { color: #d4af37; }
 .context-menu-icon.icon-move { color: #fbbf24; }
-.context-menu-icon.icon-rename { color: #a78bfa; }
+.context-menu-icon.icon-rename { color: #f4d03f; }
 .context-menu-icon.icon-delete { color: #fb7185; }
-.context-menu-icon.icon-eye { color: #8b5cf6; }
+.context-menu-icon.icon-eye { color: #d4af37; }
 .context-menu-icon.icon-star { color: #fbbf24; }
-.context-menu-icon.icon-pen { color: #a78bfa; }
+.context-menu-icon.icon-pen { color: #f4d03f; }
 .context-menu-icon.icon-detail { color: #60a5fa; }
 .context-menu-text { font-size: 14px; font-weight: 600; color: var(--text-main); }
 .context-menu-item.danger .context-menu-text { color: #fb7185; }
@@ -443,15 +454,15 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 #picker-new-folder-input { flex: 1; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--card-border-custom); border-radius: 8px; color: var(--text-main); font-size: 13px; outline: none; }
 #picker-new-folder-input:focus { border-color: var(--cyan); }
 .picker-new-folder-btn { padding: 10px 14px; background: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-[data-theme="dark"] .picker-new-folder-btn { color: #0f0a1a; }
+[data-theme="dark"] .picker-new-folder-btn { color: #050505; }
 .picker-new-folder-btn:active { transform: scale(0.95); }
 .picker-footer { padding: 12px 16px; border-top: 1px solid var(--card-border-custom); background: rgba(0, 0, 0, 0.1); display: flex; gap: 10px; }
-[data-theme="light"] .picker-footer { background: #faf5ff; }
+[data-theme="light"] .picker-footer { background: #f8f4e8; }
 .picker-btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
 .picker-btn:active { transform: scale(0.97); }
 .picker-btn-cancel { background: rgba(100, 116, 139, 0.1); color: var(--slate-300); border: 1px solid var(--card-border-custom); }
 .picker-btn-select { background: var(--accent-color); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
-[data-theme="dark"] .picker-btn-select { color: #0f0a1a; }
+[data-theme="dark"] .picker-btn-select { color: #050505; }
 .picker-current-path { padding: 8px 12px; margin: 0 16px 8px 16px; background: rgba(139, 92, 246, 0.08); border: 1px dashed rgba(139, 92, 246, 0.3); border-radius: 8px; font-size: 11px; color: var(--cyan); font-family: var(--font-standar-mono); font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
@@ -541,7 +552,7 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 .sidebar-item.danger:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .btn-pro { background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%); color: #fff; padding: 12px 18px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 15px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
 .btn-pro:active { transform: scale(0.96); }
-[data-theme="dark"] .btn-pro { color: #0f0a1a; }
+[data-theme="dark"] .btn-pro { color: #050505; }
 .account-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
 .app-item-row { background: var(--app-row-bg); border-radius: 12px !important; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: none; margin-bottom: 3px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-main); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .app-item-row:hover { background: var(--app-row-hover); transform: translateY(-1px); }
@@ -555,18 +566,18 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 .bottom-nav:hover { transform: translateY(-4px); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.3); }
 [data-theme="light"] .bottom-nav { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 10px 40px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.1); }
 .config-box { background: rgba(139, 92, 246, 0.08); border: 1px solid var(--card-border-custom); border-radius: 16px; padding: 10px 14px; margin: 14px 16px 4px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-[data-theme="light"] .config-box { background: #fff; border: 1px solid #e9d5ff; box-shadow: var(--card-shadow); }
+[data-theme="light"] .config-box { background: #fff; border: 1px solid #e6c86e; box-shadow: var(--card-shadow); }
 .config-box p { font-size: 13px; font-weight: 700; color: var(--slate-500); white-space: nowrap; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
 .config-box input { flex-grow: 1; padding: 6px 0; border: none; background: transparent; color: var(--cyan); font-family: var(--font-standar-mono); font-size: 14px; }
 .config-box input:focus { outline: none; }
 .config-box .btn-connect { padding: 8px 16px; font-size: 12px; border-radius: 10px; white-space: nowrap; margin-left: auto; }
 .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(148, 163, 184, 0.7); font-size: 10px; font-weight: 600; cursor: pointer; width: 64px; text-align: center; transition: color 0.2s ease; gap: 3px; padding: 4px 0; }
 .nav-item i { font-size: 20px; transition: all 0.2s ease; }
-.nav-item.active { color: #a78bfa; }
-.nav-item.active i { color: #a78bfa; transform: scale(1.1); }
+.nav-item.active { color: #f4d03f; }
+.nav-item.active i { color: #f4d03f; transform: scale(1.1); }
 .nav-item:active { transform: scale(0.92); }
 .nav-center-container { position: relative; width: 90px; height: 90px; display: flex; justify-content: center; align-items: center; margin-top: -20px; flex-shrink: 0; }
-.nav-center-btn { position: relative; width: 76px; height: 76px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 32px; border: 4px solid var(--body-bg); cursor: pointer; z-index: 10; box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6), 0 0 0 2px rgba(139, 92, 246, 0.3); transition: transform 0.2s ease; }
+.nav-center-btn { position: relative; width: 76px; height: 76px; background: linear-gradient(135deg, #d4af37 0%, #6366f1 100%); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 32px; border: 4px solid var(--body-bg); cursor: pointer; z-index: 10; box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6), 0 0 0 2px rgba(139, 92, 246, 0.3); transition: transform 0.2s ease; }
 .nav-center-btn:active { transform: scale(0.95); }
 .floating-popup-menu { display: none; position: fixed; bottom: 175px; left: 50%; transform: translateX(-50%); background: var(--bg-surface); border: 1px solid var(--card-border); border-radius: 12px; z-index: 10000; min-width: 170px; }
 .floating-popup-item { padding: 14px 18px; color: var(--text-main); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 12px; }
@@ -574,7 +585,7 @@ h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; background: var(
 .modal { background: var(--bg-surface); width: 100%; max-width: 450px; padding: 22px; border-radius: 16px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--card-border-custom); }
 [data-theme="light"] .modal { box-shadow: var(--card-shadow-hover); }
 .form-input { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main); margin-bottom: 12px; font-size: 15px; }
-[data-theme="light"] .form-input { border-color: #e9d5ff; }
+[data-theme="light"] .form-input { border-color: #e6c86e; }
 [data-theme="light"] .form-input:focus { border-color: var(--cyan); background: #fff; }
 textarea.form-input { min-height: 120px; resize: vertical; }
 .kategori-input-wrapper { position: relative; width: 100%; margin-bottom: 12px; display: flex; align-items: center; }
@@ -593,7 +604,7 @@ textarea.form-input { min-height: 120px; resize: vertical; }
 .toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 100000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 320px; pointer-events: none; }
 .premium-toast { background: var(--bg-surface); border: 1px solid var(--card-border-custom); border-bottom: 3px solid var(--cyan); padding: 14px 18px; border-radius: 14px; color: var(--text-main); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideDownIn 0.3s forwards; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 @keyframes slideDownIn { 0% { transform: translateY(-20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-.lock-screen-modern { position: fixed; inset: 0; background: linear-gradient(135deg, #0f0a1a 0%, #1e103c 50%, #0f0a1a 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+.lock-screen-modern { position: fixed; inset: 0; background: linear-gradient(135deg, #050505 0%, #1e103c 50%, #050505 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
 .lock-bg-gradient { position: absolute; inset: -50%; background: radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 50%); animation: gradientPulse 8s ease-in-out infinite; pointer-events: none; }
 @keyframes gradientPulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1) rotate(2deg); opacity: 1; } }
 .lock-bg-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -634,16 +645,16 @@ textarea.form-input { min-height: 120px; resize: vertical; }
 .lock-footer p { margin: 4px 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .lock-card.success { animation: cardSuccess 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 @keyframes cardSuccess { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.02); } 100% { transform: scale(0.9); opacity: 0; } }
-[data-theme="light"] .lock-screen-modern { background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 50%, #f0f9ff 100%); }
+[data-theme="light"] .lock-screen-modern { background: linear-gradient(135deg, #efe6c3 0%, #f8f4e8 50%, #f0f9ff 100%); }
 [data-theme="light"] .lock-card { background: rgba(255, 255, 255, 0.9); border-color: rgba(139, 92, 246, 0.25); }
-[data-theme="light"] .pin-input-modern { background: #fff; border-color: #e9d5ff; color: #1e1b4b; }
-[data-theme="light"] .pin-dots .dot { background: #e9d5ff; border-color: #ddd6fe; }
+[data-theme="light"] .pin-input-modern { background: #fff; border-color: #e6c86e; color: #2b2200; }
+[data-theme="light"] .pin-dots .dot { background: #e6c86e; border-color: #ddd6fe; }
 [data-theme="light"] .pin-label, [data-theme="light"] .lock-footer p { color: #64748b; }
 [data-theme="light"] .forgot-btn { color: #64748b; }
 [data-theme="light"] .forgot-btn:hover { color: var(--cyan); }
 [data-theme="light"] .lock-feedback { background: rgba(255, 255, 255, 0.98); }
 [data-theme="light"] .feedback-text { color: #334155; }
-[data-theme="light"] .logo-icon { background: linear-gradient(135deg, #8b5cf6, #06b6d4); }
+[data-theme="light"] .logo-icon { background: linear-gradient(135deg, #d4af37, #ffd700); }
 .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); margin-bottom: 15px; }
 .toggle-label { font-size: 14px; color: var(--text-main); font-weight: 500; display: flex; align-items: center; gap: 8px; }
 .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -682,7 +693,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     border-color: rgba(245, 158, 11, 0.3); 
 }
 .sync-status-dot.syncing { 
-    color: #06b6d4; 
+    color: #ffd700; 
     background: rgba(6, 182, 212, 0.15); 
     border-color: rgba(6, 182, 212, 0.3); 
     animation: pulse-sync 1.5s infinite; 
@@ -700,7 +711,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .account-detail-popup.active { display: grid; }
 @keyframes popupFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .popup-card { background: linear-gradient(160deg, rgba(26, 17, 43, 0.98) 0%, rgba(15, 10, 26, 0.99) 100%); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.8); border-radius: 20px; width: 100%; max-width: 420px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; animation: popupSlideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-[data-theme="light"] .popup-card { background: linear-gradient(160deg, #fff, #faf5ff); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .popup-card { background: linear-gradient(160deg, #fff, #f8f4e8); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.12); }
 .popup-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.02); }
 [data-theme="light"] .popup-header { border-bottom-color: rgba(0, 0, 0, 0.05); background: rgba(139, 92, 246, 0.02); }
 .popup-title { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--text-main); }
@@ -709,7 +720,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .popup-close:hover { background: rgba(244, 63, 94, 0.1); color: #fb7185; }
 .popup-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
 .popup-row-modern { display: flex; flex-direction: column; gap: 5px; padding: 7px 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; }
-[data-theme="light"] .popup-row-modern { background: #faf5ff; border-color: #e9d5ff; }
+[data-theme="light"] .popup-row-modern { background: #f8f4e8; border-color: #e6c86e; }
 .popup-row-modern.full-width { background: rgba(139, 92, 246, 0.04); border-style: dashed; }
 [data-theme="light"] .popup-row-modern.full-width { background: rgba(139, 92, 246, 0.02); }
 .popup-label-modern { font-size: 13px; font-weight: 600; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px; }
@@ -721,14 +732,14 @@ input:checked + .slider:before { transform: translateX(20px); }
 .popup-row-actions { display: flex; align-items: center; gap: 4px; }
 .popup-icon-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: var(--slate-500); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
 .popup-icon-btn:hover { background: rgba(139, 92, 246, 0.15); color: var(--cyan-light); }
-[data-theme="light"] .popup-icon-btn { background: #fff; border-color: #e9d5ff; }
+[data-theme="light"] .popup-icon-btn { background: #fff; border-color: #e6c86e; }
 .popup-footer-modern { padding: 12px 20px 18px; border-top: 1px solid rgba(255, 255, 255, 0.06); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0, 0, 0, 0.15); }
-[data-theme="light"] .popup-footer-modern { border-top-color: rgba(0, 0, 0, 0.05); background: #faf5ff; }
+[data-theme="light"] .popup-footer-modern { border-top-color: rgba(0, 0, 0, 0.05); background: #f8f4e8; }
 .popup-btn-modern { padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .popup-btn-modern.edit { background: rgba(139, 92, 246, 0.15); color: var(--cyan-light); border: 1px solid rgba(139, 92, 246, 0.2); }
 .popup-btn-modern.delete { background: rgba(244, 63, 94, 0.1); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.15); }
 .backup-category-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
-[data-theme="light"] .backup-category-item { background: #faf5ff; border-color: #e9d5ff; }
+[data-theme="light"] .backup-category-item { background: #f8f4e8; border-color: #e6c86e; }
 .backup-category-item:hover { border-color: var(--cyan); background: rgba(139, 92, 246, 0.08); }
 .backup-category-item.selected { border-color: var(--cyan); background: rgba(139, 92, 246, 0.12); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
 .backup-checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--slate-500); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
@@ -743,17 +754,17 @@ input:checked + .slider:before { transform: translateX(20px); }
 .backup-select-all-count { font-size: 12px; color: var(--slate-500); font-family: var(--font-standar-mono); }
 .backup-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
 .backup-stat-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 12px; text-align: center; }
-[data-theme="light"] .backup-stat-card { background: #faf5ff; border-color: #e9d5ff; }
+[data-theme="light"] .backup-stat-card { background: #f8f4e8; border-color: #e6c86e; }
 .backup-stat-value { font-size: 22px; font-weight: 800; color: var(--cyan); }
 .backup-stat-label { font-size: 10px; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 .import-preview-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; margin-bottom: 6px; font-size: 12px; }
-[data-theme="light"] .import-preview-item { background: #faf5ff; }
+[data-theme="light"] .import-preview-item { background: #f8f4e8; }
 .import-preview-icon { width: 28px; height: 28px; border-radius: 6px; background: rgba(139, 92, 246, 0.15); color: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
 .import-preview-info { flex: 1; min-width: 0; }
 .import-preview-title { font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .import-preview-meta { font-size: 10px; color: var(--slate-500); font-family: var(--font-standar-mono); }
 .import-file-info { display: flex; align-items: center; gap: 12px; padding: 14px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; margin-bottom: 16px; }
-.import-file-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--cyan); color: #0f0a1a; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.import-file-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--cyan); color: #050505; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
 .import-file-details { flex: 1; min-width: 0; }
 .import-file-name { font-size: 14px; font-weight: 700; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .import-file-size { font-size: 11px; color: var(--slate-500); font-family: var(--font-standar-mono); }
@@ -782,7 +793,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .vault-action-btn:active { transform: scale(0.95); }
 .vault-action-btn.rename-btn { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); }
 .vault-action-btn.rename-btn:hover { background: rgba(251, 191, 36, 0.2); }
-.vault-action-btn.transfer-btn { color: #06b6d4; background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.2); }
+.vault-action-btn.transfer-btn { color: #ffd700; background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.2); }
 .vault-action-btn.transfer-btn:hover { background: rgba(6, 182, 212, 0.2); }
 .vault-card-info { flex: 1; min-width: 0; }
 .vault-card-name { font-weight: 600; font-size: 14px; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
@@ -973,7 +984,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 <div class="lock-logo">
 <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
 <h2 class="logo-text">Royyek Vault</h2>
-<p class="logo-subtitle">Premium Cloud Security v8.4</p>
+<p class="logo-subtitle">Premium Cloud Security v8.5</p>
 </div>
 <div class="pin-section">
 <label class="pin-label">Masukkan PIN Keamanan</label>
@@ -991,7 +1002,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 </div>
 <div class="lock-footer">
 <p><i class="fa-solid fa-lock"></i> Enkripsi end-to-end</p>
-<p>v8.4 • Multiple Vaults</p>
+<p>v8.5 • Multiple Vaults</p>
 </div>
 </div>
 
@@ -1057,7 +1068,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 <button class="menu-toggle-btn" onclick="toggleSidebar(true)"><i class="fa-solid fa-bars"></i></button>
 <div>
 <h1>Royyek Vault</h1>
-<div class="subtitle"><i class="fa-solid fa-cloud"></i> Cloud Synced v8.4</div>
+<div class="subtitle"><i class="fa-solid fa-cloud"></i> Cloud Synced v8.5</div>
 </div>
 </div>
 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
@@ -1246,7 +1257,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 <div class="backup-hint" id="export-hint-json"><i class="fa-solid fa-circle-info"></i> <span>Kosongkan password jika tidak perlu enkripsi. File akan berformat JSON.</span></div>
 <div class="backup-hint" id="export-hint-other" style="display:none;"><i class="fa-solid fa-circle-info"></i> <span>Format CSV/PDF tidak mendukung enkripsi password dan akan diekspor sebagai data terbuka (plain text).</span></div>
 <div style="display:flex; gap:12px; margin-top:15px;">
-<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="bukaImportModal()"><i class="fa-solid fa-file-import"></i> Restore</button>
+<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background: linear-gradient(135deg, #ffd700, #0891b2);" onclick="bukaImportModal()"><i class="fa-solid fa-file-import"></i> Restore</button>
 <button type="button" class="btn-pro" style="flex-grow:1; justify-content:center;" onclick="doExport()"><i class="fa-solid fa-download"></i> Backup</button>
 </div>
 <div style="text-align:center; margin-top:12px;">
@@ -1414,8 +1425,8 @@ input:checked + .slider:before { transform: translateX(20px); }
 <div class="transfer-info-label"><i class="fa-solid fa-box-archive" style="color:var(--cyan);"></i> Data Sumber:</div>
 <div class="transfer-info-name" id="transfer-source-name"></div>
 <div class="transfer-info-stats">
-<span><i class="fa-solid fa-key" style="color:#8b5cf6;"></i> <span id="transfer-akun-count">0</span> Akun</span>
-<span><i class="fa-solid fa-note-sticky" style="color:#06b6d4;"></i> <span id="transfer-catatan-count">0</span> Catatan</span>
+<span><i class="fa-solid fa-key" style="color:#d4af37;"></i> <span id="transfer-akun-count">0</span> Akun</span>
+<span><i class="fa-solid fa-note-sticky" style="color:#ffd700;"></i> <span id="transfer-catatan-count">0</span> Catatan</span>
 </div>
 </div>
 <div style="margin-bottom:16px;">
@@ -1429,7 +1440,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 </div>
 </div>
 <div style="display:flex; gap:12px; margin-top:20px;">
-<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #06b6d4, #0891b2);" onclick="executeTransferData()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Sekarang</button>
+<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #ffd700, #0891b2);" onclick="executeTransferData()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Sekarang</button>
 <button type="button" style="color:var(--slate-500); background:none; border:none; padding:0 16px;" onclick="closeTransferModal()">Batal</button>
 </div>
 </div>
@@ -1454,7 +1465,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 </div>
 </div>
 <div style="display:flex; gap:12px; margin-top:20px;">
-<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #06b6d4, #0891b2);" onclick="executeMoveToVault()"><i class="fa-solid fa-arrow-right"></i> Pindahkan Sekarang</button>
+<button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #ffd700, #0891b2);" onclick="executeMoveToVault()"><i class="fa-solid fa-arrow-right"></i> Pindahkan Sekarang</button>
 <button type="button" style="color:var(--slate-500); background:none; border:none; padding:0 16px;" onclick="closeMoveToVaultModal()">Batal</button>
 </div>
 </div>
@@ -1489,12 +1500,12 @@ const defaultQuickActions = [
 { id: 'database', label: 'Database', icon: 'fa-link', color: 'bg-green', action: 'bukaDatabaseSettings()' },
 { id: 'kunci', label: 'Kunci', icon: 'fa-lock', color: 'bg-red', action: 'kunciBrankasMendadak()' },
 { id: 'antrian', label: 'Antrian', icon: 'fa-clock-rotate-left', color: 'bg-yellow', action: 'bukaQueueManager()' },
-{ id: 'folder', label: 'Folder', icon: 'fa-folder-tree', color: 'bg-cyan', action: 'bukaDaftarFolderInduk()', customStyle: 'background: linear-gradient(135deg, #06b6d4, #0891b2);' }
+{ id: 'folder', label: 'Folder', icon: 'fa-folder-tree', color: 'bg-cyan', action: 'bukaDaftarFolderInduk()', customStyle: 'background: linear-gradient(135deg, #ffd700, #0891b2);' }
 ];
 let quickActionsConfig = JSON.parse(localStorage.getItem('vault_quick_actions')) || defaultQuickActions;
 function renderQuickActions() { const grid = document.getElementById('quick-actions-grid'); if (!grid) return; let html = ''; quickActionsConfig.forEach(action => { const styleAttr = action.customStyle ? `style="${action.customStyle}"` : ''; html += `<div class="quick-action-btn" onclick="${action.action}"><div class="qa-icon ${action.color}" ${styleAttr}><i class="fa-solid ${action.icon}"></i></div><span>${action.label}</span></div>`; }); grid.innerHTML = html; }
 function openQuickActionsCustomizer() { const modal = document.getElementById('quickActionsModal'); const list = document.getElementById('quick-actions-custom-list'); if (!modal || !list) return; let html = ''; const allActions = [{ id: 'tambah', label: 'Tambah', icon: 'fa-plus', color: 'bg-cyan' }, { id: 'sync', label: 'Sync', icon: 'fa-rotate', color: 'bg-blue' }, { id: 'backup', label: 'Backup', icon: 'fa-database', color: 'bg-purple' }, { id: 'database', label: 'Database', icon: 'fa-link', color: 'bg-green' }, { id: 'kunci', label: 'Kunci', icon: 'fa-lock', color: 'bg-red' }, { id: 'antrian', label: 'Antrian', icon: 'fa-clock-rotate-left', color: 'bg-yellow' }, { id: 'folder', label: 'Folder', icon: 'fa-folder-tree', color: 'bg-cyan' }]; allActions.forEach(action => { const isEnabled = quickActionsConfig.some(qa => qa.id === action.id); html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg-surface);border:1px solid var(--card-border-custom);border-radius:10px;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:12px;"><div class="qa-icon ${action.color}" style="width:36px;height:36px;font-size:16px;"><i class="fa-solid ${action.icon}"></i></div><span style="font-weight:600;color:var(--text-main);">${action.label}</span></div><label class="switch"><input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleQuickAction('${action.id}', this.checked)"><span class="slider"></span></label></div>`; }); list.innerHTML = html; modal.style.display = 'grid'; }
-function toggleQuickAction(id, enabled) { if (enabled) { const allActions = {'tambah': { id: 'tambah', label: 'Tambah', icon: 'fa-plus', color: 'bg-cyan', action: 'bukaInputLangsung()' }, 'sync': { id: 'sync', label: 'Sync', icon: 'fa-rotate', color: 'bg-blue', action: 'fetchData()' }, 'backup': { id: 'backup', label: 'Backup', icon: 'fa-database', color: 'bg-purple', action: 'bukaBackupRestore()' }, 'database': { id: 'database', label: 'Database', icon: 'fa-link', color: 'bg-green', action: 'bukaDatabaseSettings()' }, 'kunci': { id: 'kunci', label: 'Kunci', icon: 'fa-lock', color: 'bg-red', action: 'kunciBrankasMendadak()' }, 'antrian': { id: 'antrian', label: 'Antrian', icon: 'fa-clock-rotate-left', color: 'bg-yellow', action: 'bukaQueueManager()' }, 'folder': { id: 'folder', label: 'Folder', icon: 'fa-folder-tree', color: 'bg-cyan', action: 'bukaDaftarFolderInduk()', customStyle: 'background: linear-gradient(135deg, #06b6d4, #0891b2);' }}; if (!quickActionsConfig.some(qa => qa.id === id)) { quickActionsConfig.push(allActions[id]); } } else { quickActionsConfig = quickActionsConfig.filter(qa => qa.id !== id); } }
+function toggleQuickAction(id, enabled) { if (enabled) { const allActions = {'tambah': { id: 'tambah', label: 'Tambah', icon: 'fa-plus', color: 'bg-cyan', action: 'bukaInputLangsung()' }, 'sync': { id: 'sync', label: 'Sync', icon: 'fa-rotate', color: 'bg-blue', action: 'fetchData()' }, 'backup': { id: 'backup', label: 'Backup', icon: 'fa-database', color: 'bg-purple', action: 'bukaBackupRestore()' }, 'database': { id: 'database', label: 'Database', icon: 'fa-link', color: 'bg-green', action: 'bukaDatabaseSettings()' }, 'kunci': { id: 'kunci', label: 'Kunci', icon: 'fa-lock', color: 'bg-red', action: 'kunciBrankasMendadak()' }, 'antrian': { id: 'antrian', label: 'Antrian', icon: 'fa-clock-rotate-left', color: 'bg-yellow', action: 'bukaQueueManager()' }, 'folder': { id: 'folder', label: 'Folder', icon: 'fa-folder-tree', color: 'bg-cyan', action: 'bukaDaftarFolderInduk()', customStyle: 'background: linear-gradient(135deg, #ffd700, #0891b2);' }}; if (!quickActionsConfig.some(qa => qa.id === id)) { quickActionsConfig.push(allActions[id]); } } else { quickActionsConfig = quickActionsConfig.filter(qa => qa.id !== id); } }
 function saveQuickActionsCustomizer() { localStorage.setItem('vault_quick_actions', JSON.stringify(quickActionsConfig)); closeQuickActionsCustomizer(); renderQuickActions(); showToast('✅ Pengaturan aksi cepat disimpan', 'fa-check'); }
 function closeQuickActionsCustomizer() { const modal = document.getElementById('quickActionsModal'); if (modal) modal.style.display = 'none'; }
 
@@ -1936,7 +1947,7 @@ function renderMultiSelectToolbar() {
         <div class="count-badge">${totalSelected} Dipilih</div>
         <button class="multi-btn secondary" onclick="selectAllInView()"><i class="fa-solid fa-check-double"></i> Semua</button>
         <button class="multi-btn primary" style="background: var(--blue);" onclick="bulkMove()"><i class="fa-solid fa-folder-tree"></i> Pindah</button>
-        <button class="multi-btn primary" style="background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="bulkMoveToVault()"><i class="fa-solid fa-box-archive"></i> Pindah Vault</button>
+        <button class="multi-btn primary" style="background: linear-gradient(135deg, #ffd700, #0891b2);" onclick="bulkMoveToVault()"><i class="fa-solid fa-box-archive"></i> Pindah Vault</button>
         <button class="multi-btn primary" onclick="bulkFavorite()"><i class="fa-solid fa-star"></i> Favorit</button>
         <button class="multi-btn danger" onclick="bulkDelete()"><i class="fa-solid fa-trash"></i> Hapus</button>
         <button class="multi-btn secondary" onclick="toggleMultiSelectMode()"><i class="fa-solid fa-xmark"></i> Batal</button>
@@ -2148,7 +2159,7 @@ async function bulkMoveToVault() {
                 </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:20px;">
-                <button type="button" class="btn-pro" id="btn-execute-bulk-move" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #06b6d4, #0891b2);">
+                <button type="button" class="btn-pro" id="btn-execute-bulk-move" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #ffd700, #0891b2);">
                     <i class="fa-solid fa-arrow-right"></i> Pindahkan Sekarang
                 </button>
                 <button type="button" id="btn-cancel-bulk-move" style="color:var(--slate-500); background:none; border:none; padding:0 16px; cursor:pointer;">
@@ -2300,7 +2311,7 @@ function closeVaultManager() { const modal = safeGet('vaultManagerModal'); if (m
 function renderVaultManagerList() { const container = safeGet('vault-list-container'); if (!container) return; let html = ''; vaults.forEach(v => { const isDefault = v.id === 'default'; const isActive = v.id === currentVaultId; const akunCount = accounts.filter(a => (a.vault_id || 'default') === v.id).length; const catatanCount = notes.filter(n => (n.vault_id || 'default') === v.id).length; const totalItems = akunCount + catatanCount; html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--bg-surface); border:1px solid var(--card-border-custom); border-radius:10px; margin-bottom:8px;"><div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;"><i class="fa-solid fa-shield-halved" style="color:var(--cyan); font-size:18px;"></i><div class="vault-card-info"><div class="vault-card-name">${v.name}${isActive ? '<span class="vault-badge">Aktif</span>' : ''}</div><div class="vault-card-meta">${v.pin ? '🔒 Dilindungi PIN' : '🔓 Tanpa PIN'} • ${totalItems} item (${akunCount} akun, ${catatanCount} catatan)</div></div></div><div class="vault-card-actions">${!isDefault ? `<button class="vault-action-btn rename-btn" onclick="renameVault('${v.id}')" title="Rename Brankas"><i class="fa-solid fa-pen"></i></button><button class="vault-action-btn transfer-btn" onclick="transferVaultData('${v.id}')" title="Pindahkan Data ke Vault Lain"><i class="fa-solid fa-arrow-right-arrow-left"></i></button><button class="delete-vault-btn" style="opacity:1; font-size:16px;" onclick="deleteVault('${v.id}')" title="Hapus Brankas"><i class="fa-solid fa-trash"></i></button>` : `<span style="font-size:11px; color:var(--slate-500); padding:0 8px;">Default</span>`}</div></div>`; }); container.innerHTML = html; }
 function renameVault(id) { const vault = vaults.find(v => v.id === id); if (!vault) return; const newName = prompt('️ Rename Brankas:', vault.name); if (!newName || newName.trim() === '') { showToast('️ Nama brankas tidak boleh kosong', 'fa-circle-exclamation'); return; } if (newName.trim() === vault.name) return; const exists = vaults.some(v => v.id !== id && v.name.toLowerCase() === newName.trim().toLowerCase()); if (exists) { showToast('⚠️ Nama brankas sudah digunakan', 'fa-circle-exclamation'); return; } const oldName = vault.name; vault.name = newName.trim(); saveVaults(); renderVaultManagerList(); renderVaultDropdown(); updateCurrentVaultDisplay(); showToast(`✏️ Brankas "${oldName}" diubah menjadi "${newName.trim()}"`, 'fa-pen'); }
 function transferVaultData(sourceId) { const sourceVault = vaults.find(v => v.id === sourceId); if (!sourceVault) return; const sourceAccounts = accounts.filter(a => (a.vault_id || 'default') === sourceId); const sourceNotes = notes.filter(n => (n.vault_id || 'default') === sourceId); if (sourceAccounts.length === 0 && sourceNotes.length === 0) { showToast('ℹ️ Brankas ini kosong, tidak ada data untuk dipindahkan', 'fa-info-circle'); return; } const otherVaults = vaults.filter(v => v.id !== sourceId); if (otherVaults.length === 0) { showToast('️ Tidak ada brankas tujuan lain. Buat brankas baru terlebih dahulu.', 'fa-circle-exclamation'); return; } transferSourceId = sourceId; showTransferModal(sourceVault, sourceAccounts.length, sourceNotes.length); }
-function showTransferModal(sourceVault, akunCount, catatanCount) { let modal = document.getElementById('transferVaultModal'); if (!modal) { modal = document.createElement('div'); modal.id = 'transferVaultModal'; modal.className = 'modal-overlay'; modal.onclick = function(e) { if (e.target === this) closeTransferModal(); }; modal.innerHTML = `<div class="modal" onclick="event.stopPropagation()"><h3 style="margin-bottom:15px; color:var(--accent-color);"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Data Brankas</h3><div class="transfer-info-box"><div class="transfer-info-label"><i class="fa-solid fa-box-archive" style="color:var(--cyan);"></i> Data Sumber:</div><div class="transfer-info-name" id="transfer-source-name"></div><div class="transfer-info-stats"><span><i class="fa-solid fa-key" style="color:#8b5cf6;"></i> <span id="transfer-akun-count">0</span> Akun</span><span><i class="fa-solid fa-note-sticky" style="color:#06b6d4;"></i> <span id="transfer-catatan-count">0</span> Catatan</span></div></div><div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:var(--slate-300); margin-bottom:8px;"><i class="fa-solid fa-arrow-right" style="color:var(--cyan); margin-right:6px;"></i> Pilih Brankas Tujuan:</label><select id="transfer-target-select" class="transfer-target-select"></select></div><div class="transfer-warning"><div class="transfer-warning-text"><i class="fa-solid fa-triangle-exclamation" style="margin-top:2px; flex-shrink:0;"></i><span>Semua data akan dipindahkan dari brankas sumber ke brankas tujuan. Brankas sumber akan menjadi <strong>kosong</strong> setelah proses ini.</span></div></div><div style="display:flex; gap:12px; margin-top:20px;"><button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #06b6d4, #0891b2);" onclick="executeTransferData()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Sekarang</button><button type="button" style="color:var(--slate-500); background:none; border:none; padding:0 16px;" onclick="closeTransferModal()">Batal</button></div></div>`; document.body.appendChild(modal); } document.getElementById('transfer-source-name').textContent = sourceVault.name; document.getElementById('transfer-akun-count').textContent = akunCount; document.getElementById('transfer-catatan-count').textContent = catatanCount; const select = document.getElementById('transfer-target-select'); select.innerHTML = ''; vaults.forEach(v => { if (v.id !== transferSourceId) { const opt = document.createElement('option'); opt.value = v.id; const isActive = v.id === currentVaultId ? ' (Aktif)' : ''; opt.textContent = v.name + isActive; select.appendChild(opt); } }); modal.style.display = 'grid'; }
+function showTransferModal(sourceVault, akunCount, catatanCount) { let modal = document.getElementById('transferVaultModal'); if (!modal) { modal = document.createElement('div'); modal.id = 'transferVaultModal'; modal.className = 'modal-overlay'; modal.onclick = function(e) { if (e.target === this) closeTransferModal(); }; modal.innerHTML = `<div class="modal" onclick="event.stopPropagation()"><h3 style="margin-bottom:15px; color:var(--accent-color);"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Data Brankas</h3><div class="transfer-info-box"><div class="transfer-info-label"><i class="fa-solid fa-box-archive" style="color:var(--cyan);"></i> Data Sumber:</div><div class="transfer-info-name" id="transfer-source-name"></div><div class="transfer-info-stats"><span><i class="fa-solid fa-key" style="color:#d4af37;"></i> <span id="transfer-akun-count">0</span> Akun</span><span><i class="fa-solid fa-note-sticky" style="color:#ffd700;"></i> <span id="transfer-catatan-count">0</span> Catatan</span></div></div><div style="margin-bottom:16px;"><label style="display:block; font-size:13px; font-weight:600; color:var(--slate-300); margin-bottom:8px;"><i class="fa-solid fa-arrow-right" style="color:var(--cyan); margin-right:6px;"></i> Pilih Brankas Tujuan:</label><select id="transfer-target-select" class="transfer-target-select"></select></div><div class="transfer-warning"><div class="transfer-warning-text"><i class="fa-solid fa-triangle-exclamation" style="margin-top:2px; flex-shrink:0;"></i><span>Semua data akan dipindahkan dari brankas sumber ke brankas tujuan. Brankas sumber akan menjadi <strong>kosong</strong> setelah proses ini.</span></div></div><div style="display:flex; gap:12px; margin-top:20px;"><button type="button" class="btn-pro" style="flex-grow:1; justify-content:center; background:linear-gradient(135deg, #ffd700, #0891b2);" onclick="executeTransferData()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pindahkan Sekarang</button><button type="button" style="color:var(--slate-500); background:none; border:none; padding:0 16px;" onclick="closeTransferModal()">Batal</button></div></div>`; document.body.appendChild(modal); } document.getElementById('transfer-source-name').textContent = sourceVault.name; document.getElementById('transfer-akun-count').textContent = akunCount; document.getElementById('transfer-catatan-count').textContent = catatanCount; const select = document.getElementById('transfer-target-select'); select.innerHTML = ''; vaults.forEach(v => { if (v.id !== transferSourceId) { const opt = document.createElement('option'); opt.value = v.id; const isActive = v.id === currentVaultId ? ' (Aktif)' : ''; opt.textContent = v.name + isActive; select.appendChild(opt); } }); modal.style.display = 'grid'; }
 function closeTransferModal() { const modal = document.getElementById('transferVaultModal'); if (modal) modal.style.display = 'none'; transferSourceId = null; }
 async function executeTransferData() { 
     if (!transferSourceId) return; 
